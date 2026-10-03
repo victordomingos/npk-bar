@@ -116,6 +116,8 @@ function cells(segments: Segment[], total: number, width: number): number[] {
 }
 
 let lastRefresh = 0
+// Whether this load has seen a limit reading (a subscription session).
+let seenLimits = false
 // CSS px a text column spans on the desktop band (estimated from screenshots; `status` shows the
 // figures the last drawing used, to recalibrate).
 const PX_PER_COLUMN = 9
@@ -178,9 +180,16 @@ async function refresh($: EngineInterface) {
   // Limits arrive with a response; until the first one (a fresh or reloaded session) keep the last
   // reading, saved across sessions, rather than showing none.
   if (usage.rateLimits.length > 0) {
+    seenLimits = true
     const lims = toLimits(usage.rateLimits)
     await $.state.set(limits, lims)
     await $.store.set('limits', lims)
+  } else if (usage.context.tokens !== undefined && !seenLimits) {
+    // Replies come back and no limit was ever reported since this load: the session has none (an
+    // API key, not a subscription), so readings saved from another session must not show. A
+    // session that has reported limits keeps them through a momentarily empty reading.
+    await $.state.set(limits, [])
+    await $.store.set('limits', [])
   } else if (((await $.state.get(limits)).value ?? []).length === 0) {
     await $.state.set(limits, await savedLimits($))
   }
@@ -393,8 +402,9 @@ export const register: Register = on => {
     // proportional font.
     // Row labels in a fixed-width box (padding with spaces does not align on the desktop's
     // proportional font), one width per column.
-    const limitLabels = Math.max(0, ...lims.map(l => l.label.length)) + 1
-    const estLabels = Math.max(0, ...(est?.lines.map(l => l.label.length) ?? [])) + 1
+    // Label plus colon plus one space before the bar.
+    const limitLabels = Math.max(0, ...lims.map(l => l.label.length)) + 2
+    const estLabels = Math.max(0, ...(est?.lines.map(l => l.label.length) ?? [])) + 2
     // Limits and estimates side by side when both columns fit (label, 20-block bar, ~25 cells of
     // text each), else one under the other, sharing one label width so all bars line up.
     const limitColumn = limitLabels + ROW_BAR + 15

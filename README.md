@@ -34,10 +34,15 @@ It also follows the app's light or dark theme:
 ![npk-bar gauges in dark mode](npk-bar/docs/gauges-dark.png)
 
 A terminal cannot draw images, so there the same figures are shown as text,
-with the colour cues on the bars and numbers instead of the rings. This image
-was rendered from the mod's own text layout:
+with the colour cues on the bars and numbers instead of the rings. This is the
+`compact` layout, the default in a terminal:
 
-![npk-bar in an 80-column terminal](npk-bar/docs/terminal-80-columns.png)
+![npk-bar compact layout in a terminal](npk-bar/docs/terminal-compact.png)
+
+And this is the `full` layout in a terminal (with no estimates yet, at the
+start of a session):
+
+![npk-bar full layout in a terminal](npk-bar/docs/terminal-full.png)
 
 
 ## Installation and dependencies:
