@@ -11,6 +11,9 @@ export type Estimates = { lines: Estimate[]; at: number }
 
 export type Layout = 'compact' | 'full' | 'gauges'
 
+// The first implied total (hours) seen for each estimate line: the baseline slippage is measured from.
+export type Baselines = Record<string, number>
+
 declare module 'claude-code' {
   interface PluginState {
     'context-bar': {
@@ -19,6 +22,7 @@ declare module 'claude-code' {
       snapshot: Snapshot | null
       limits: Limit[]
       estimates: Estimates | null
+      baselines: Baselines
     }
   }
 }

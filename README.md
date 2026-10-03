@@ -18,8 +18,10 @@ costs nothing: no API calls, and nothing is added to the model's context.
   pace, then yellow, orange and red the further over it you go.
 - **Warnings**: the inside of the Context and limit rings turns yellow
   from 50%, orange from 75%, red from 90%, and pulses from 93%.
-- **Estimates** (optional): progress of the tests in flight, the session and
-  the project, with the time left against the implied total.
+- **Estimates** (optional): progress of the validation in flight (tests you
+  run), the session and the project, with the time left against the implied
+  total. The arc turns green while an estimate holds, then yellow, orange and
+  red as its implied total grows past the first estimate (+10%, +25%, +50%).
 
 On a narrow window the labels move under the rings and the gauges wrap:
 
@@ -139,9 +141,9 @@ line per item. The labels can be in another language: Portuguese ones are
 shown in English, others as written.
 
 ```
-**Tests in progress:** `████████████░░░░░░░░` 60% · ~1h
-**Session:**           `████████░░░░░░░░░░░░` 40% · ~3h
-**Project:**           `██████████████░░░░░░` 72% · ~45h
+**Validation:** `████████████░░░░░░░░` 60% · ~1h
+**Session:**    `████████░░░░░░░░░░░░` 40% · ~3h
+**Project:**    `██████████████░░░░░░` 72% · ~45h
 ```
 
 The context and limit gauges need nothing else. For the estimates, install

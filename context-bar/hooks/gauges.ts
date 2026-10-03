@@ -79,11 +79,27 @@ function level(percent: number): string {
 const divider = (x: number, h: number) => `<line class="div" x1="${x}" y1="4" x2="${x}" y2="${h - 4}"/>`
 
 // Hours from an estimate's time left (`~45h`, `~30min`, `~2d`, `~1,5h`); null when unreadable.
-function hoursOf(left: string): number | null {
+export function hoursOf(left: string): number | null {
   const m = left.match(/([\d.,]+)\s*(min|h|d)/)
   if (!m) return null
   const n = Number(m[1].replace(',', '.'))
   return Number.isNaN(n) ? null : m[2] === 'min' ? n / 60 : m[2] === 'd' ? n * 24 : n
+}
+
+// The total an estimate implies: time left / (1 − share done). None below 10% done (2% vs 3%
+// moves it by a third) or at 100%.
+export function impliedTotal(e: Estimate): number | null {
+  const h = hoursOf(e.left.split(/\s/)[0])
+  return h !== null && e.percent >= 10 && e.percent < 100 ? h / (1 - e.percent / 100) : null
+}
+
+// Slippage: how much the implied total grew since its baseline. Coloured like the limits' pace:
+// green on or within 10% of the estimate, then yellow, orange (from +25%) and red (from +50%).
+// No baseline yet: the neutral estimate colour.
+function slipStatus(total: number | null, baseline: number | undefined): PaceStatus | null {
+  if (total === null || baseline === undefined) return null
+  const growth = total / baseline - 1
+  return growth <= 0.1 ? 'good' : growth <= 0.25 ? 'warning' : growth <= 0.5 ? 'serious' : 'critical'
 }
 
 // `45min`, `2.5h`, `161h`.
@@ -157,8 +173,9 @@ export function gaugesSvg(input: {
   estimates: Estimate[]
   now: number
   maxWidth: number
+  baselines: Record<string, number>
 }): { source: string; alt: string; width: number; height: number; oneRowWidth: number; isStacked: boolean } {
-  const { segments, maxTokens, usedTokens, limits, estimates, now, maxWidth } = input
+  const { segments, maxTokens, usedTokens, limits, estimates, now, maxWidth, baselines } = input
   const colours: string[] = []
   const classOf = (pair: [string, string]) => {
     let i = colours.indexOf(pair.join())
@@ -213,25 +230,25 @@ export function gaugesSvg(input: {
     const g = gauge(0, [{ from: 0, len: Math.min(100, l.percent), cls, title: `${l.label} ${pct(l.percent)}` }], pct(l.percent), l.label, sub, `${l.label} limit ${pct(l.percent)} used${sub ? `, resets in ${sub.slice(2)}` : ''}${paceText}`, tick, stacked, level(l.percent))
     units.push({ group: 1, width: g.width, svg: g.svg })
   }
-  // Fixed slots, so nothing shifts when a line comes or goes: Tests appears only while tests are
+  // Fixed slots, so nothing shifts when a line comes or goes: Validation appears only while tests are
   // pending, and a new session carries over only Project. A missing slot is a quiet empty ring;
   // labels other than these three follow in their own order.
-  const SLOTS_ORDER = ['Tests', 'Session', 'Project']
+  const SLOTS_ORDER = ['Validation', 'Session', 'Project']
   const ordered: (Estimate | string)[] =
     estimates.length > 0
       ? [...SLOTS_ORDER.map(l => estimates.find(e => e.label === l) ?? l), ...estimates.filter(e => !SLOTS_ORDER.includes(e.label))]
       : []
   for (const e of ordered) {
     if (typeof e === 'string') {
-      const g = gauge(0, [], '–', e, e === 'Tests' ? 'none pending' : 'not yet', `${e}: no estimate yet`, undefined, stacked)
+      const g = gauge(0, [], '–', e, e === 'Validation' ? 'none pending' : 'not yet', `${e}: no estimate yet`, undefined, stacked)
       units.push({ group: 2, width: g.width, svg: `<g class="idle">${g.svg}</g>` })
       continue
     }
     const left = e.left.split(/\s/)[0]
     // Total implied by the share done: left / (1 − done). Shown as `left/total`.
     const h = hoursOf(left)
-    // Below 10% done the implied total swings too much (2% vs 3% moves it by a third): omit it.
-    const total = h !== null && e.percent >= 10 && e.percent < 100 ? h / (1 - e.percent / 100) : null
+    const total = impliedTotal(e)
+    const slip = slipStatus(total, baselines[e.label])
     // Same unit on both sides: written once, `~45/161h`, `~15/30m`; mixed: `~30m/1.5h`.
     const short = (v: number) => hrs(v).replace('min', 'm')
     const sub =
@@ -240,8 +257,11 @@ export function gaugesSvg(input: {
         : (h! >= 1) === (total >= 1)
           ? `~${short(h!).slice(0, -1)}/${short(total)}`
           : `~${short(h!)}/${short(total)}`
-    const title = `${e.label} ${e.percent}% done${left ? `, ${left} left` : ''}${total !== null ? ` of ~${hrs(total)} total` : ''}`
-    const g = gauge(0, [{ from: 0, len: e.percent, cls: classOf(ESTIMATE), title }], `${e.percent}%`, e.label, sub, title, undefined, stacked)
+    const base = baselines[e.label]
+    const title =
+      `${e.label} ${e.percent}% done${left ? `, ${left} left` : ''}${total !== null ? ` of ~${hrs(total)} total` : ''}` +
+      (total !== null && base !== undefined ? ` (first estimate ~${hrs(base)}, ${total >= base ? '+' : ''}${Math.round((total / base - 1) * 100)}%)` : '')
+    const g = gauge(0, [{ from: 0, len: e.percent, cls: slip ? `st-${slip}` : classOf(ESTIMATE), title }], `${e.percent}%`, e.label, sub, title, undefined, stacked)
     units.push({ group: 2, width: g.width, svg: g.svg })
   }
   return units

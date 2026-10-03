@@ -1,6 +1,6 @@
 ---
 name: progress-estimates
-description: Short progress-estimate block - percentage done and time left for the tests in progress, the current session and the whole project. Use at the end of each significant iteration (after reading the initial prompt and the project's history or status files, after implementing features the user has to test or review, after preparing a commit), on every report of results while a round of tests is running, or when the user asks "how much is left", "where are we" or for an estimate of completion.
+description: Short progress-estimate block - percentage done and time left for the validation in progress (tests the user runs), the current session and the whole project. Use at the end of each significant iteration (after reading the initial prompt and the project's history or status files, after implementing features the user has to test or review, after preparing a commit), on every report of results while a round of tests is running, or when the user asks "how much is left", "where are we" or for an estimate of completion.
 ---
 
 # Progress estimates
@@ -11,9 +11,9 @@ before it announcing it, nothing after it justifying it.
 ## Format
 
 ```
-**Tests in progress:** `████████████░░░░░░░░` 60% · ~1h
-**Session:**           `████████░░░░░░░░░░░░` 40% · ~3h
-**Project:**           `██████████████░░░░░░` 72% · ~45h
+**Validation:** `████████████░░░░░░░░` 60% · ~1h
+**Session:**    `████████░░░░░░░░░░░░` 40% · ~3h
+**Project:**    `██████████████░░░░░░` 72% · ~45h
 ```
 
 - The bar is **always 20 blocks**: `█` for the part done (the percentage divided
@@ -23,7 +23,7 @@ before it announcing it, nothing after it justifying it.
   reads as full because of rounding.
 - The percentage is what is already done; the time is what is **left**, not
   what was spent.
-- The tests line appears only while there are tests or validation pending on
+- The Validation line appears only while there are tests or checks pending on
   the user's side.
 - One line per item: no comments, no hypotheses, no caveats.
 - Round times: `~1h`, `~3h`, `~40h`. Under an hour: `~30min`.
@@ -51,7 +51,7 @@ is not an intermediate reply.
    if there is one (phases done / total phases, weighted by size). Without a
    document, estimate from the scope agreed with the user.
 2. **Session:** against what was agreed for this session, not the project.
-3. **Tests:** see "Test rounds".
+3. **Validation:** see "Test rounds".
 
 Estimate honestly: work still waiting for confirmation by tests is not done,
 and a percentage that only ever goes up carries no information. Lowering a
@@ -69,7 +69,7 @@ first time, the total with one round of fixes (change, rebuild, re-run the
 affected cases), and what is not counted (waiting on third parties, steps run
 on another machine, environment start-up).
 
-**The tests percentage is weighted by the estimated time of each step**, not by
+**The Validation percentage is weighted by the estimated time of each step**, not by
 counting cases: ten minutes of confirmation queries and twenty minutes of the
 heaviest case are not worth the same. With no per-step estimate, use validated
 cases / planned cases.

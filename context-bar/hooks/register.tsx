@@ -1,14 +1,15 @@
 import type { EngineInterface, Register } from 'claude-code'
 
-import type { Estimate, Estimates, Layout, Limit, Segment, Snapshot } from '../types'
+import type { Baselines, Estimate, Estimates, Layout, Limit, Segment, Snapshot } from '../types'
 
-import { gaugesSvg, pace, until } from './gauges'
+import { gaugesSvg, impliedTotal, pace, until } from './gauges'
 
 const isOn = { plugin: 'context-bar', key: 'isOn' } as const
 const layout = { plugin: 'context-bar', key: 'layout' } as const
 const LAYOUTS: Layout[] = ['compact', 'full', 'gauges']
 const snapshot = { plugin: 'context-bar', key: 'snapshot' } as const
 const limits = { plugin: 'context-bar', key: 'limits' } as const
+const baselines = { plugin: 'context-bar', key: 'baselines' } as const
 const estimates = { plugin: 'context-bar', key: 'estimates' } as const
 
 // Estimates older than this (from a previous session in the same folder) are not shown.
@@ -47,9 +48,11 @@ const share = (n: number, of: number) => {
 // The bar is in English whatever language the replies are in: known estimate labels are translated
 // (Portuguese for now); any other label is shown as written.
 const ESTIMATE_LABELS: Record<string, string> = {
-  'testes em curso': 'Tests',
-  testes: 'Tests',
-  'tests in progress': 'Tests',
+  'testes em curso': 'Validation',
+  testes: 'Validation',
+  'tests in progress': 'Validation',
+  tests: 'Validation',
+  'validação': 'Validation',
   'sessão': 'Session',
   sessao: 'Session',
   projeto: 'Project',
@@ -120,23 +123,40 @@ async function savedLimits($: EngineInterface): Promise<Limit[]> {
     .map(l => ({ ...l, label: renamed[l.label] ?? l.label }))
 }
 
-// The newest estimates block in this conversation, set as current; false when there is none.
+// New estimates: set them as current and record each line's first implied total as its baseline
+// (slippage is measured from it). A line whose share done drops by 30 points or more is new work:
+// its baseline starts over. Project's baseline is kept across sessions in this folder.
+async function recordEstimates($: EngineInterface, lines: Estimate[]): Promise<void> {
+  const previous = (await $.state.get(estimates)).value
+  const base: Baselines = { ...((await $.state.get(baselines)).value ?? {}) }
+  for (const l of lines) {
+    const label = englishLabel(l.label)
+    const before = previous?.lines.find(p => englishLabel(p.label) === label)
+    if (before && before.percent - l.percent >= 30) delete base[label]
+    const total = impliedTotal({ ...l, label })
+    if (total !== null && base[label] === undefined) base[label] = total
+  }
+  const est: Estimates = { lines, at: await $.clock.now() }
+  await $.state.set(estimates, est)
+  await $.state.set(baselines, base)
+  const cwd = await $.session.cwd()
+  await $.store.set(`estimates:${cwd}`, est)
+  if (base.Project !== undefined) await $.store.set(`baseline:${cwd}`, base.Project)
+}
+
+// The estimates blocks in this conversation, the newest set as current; false when there are none.
 // Runs once per load.
 async function findEstimatesInTranscript($: EngineInterface): Promise<boolean> {
   if (scannedTranscript) return false
   scannedTranscript = true
-  const messages = await $.session.messages()
-  for (let i = messages.length - 1; i >= 0; i--) {
-    if (messages[i].role !== 'assistant') continue
-    const lines = parseEstimates(messages[i].text ?? '')
-    if (lines.length > 0) {
-      const est: Estimates = { lines, at: await $.clock.now() }
-      await $.state.set(estimates, est)
-      await $.store.set(`estimates:${await $.session.cwd()}`, est)
-      return true
-    }
-  }
-  return false
+  // Oldest first, so each line's baseline is its first estimate in this conversation and the
+  // newest block ends up current.
+  const blocks = (await $.session.messages())
+    .filter(m => m.role === 'assistant')
+    .map(m => parseEstimates(m.text ?? ''))
+    .filter(lines => lines.length > 0)
+  for (const lines of blocks) await recordEstimates($, lines)
+  return blocks.length > 0
 }
 
 async function refresh($: EngineInterface) {
@@ -196,8 +216,12 @@ export const register: Register = on => {
     if (LAYOUTS.includes(savedLayout as Layout)) await $.state.set(layout, savedLayout as Layout)
     if (((await $.state.get(limits)).value ?? []).length === 0) await $.state.set(limits, await savedLimits($))
     // Estimates: a resumed session has its own block in the conversation (all three lines are
-    // current). A new session in the same folder carries over only the Project line: Tests and
+    // current). A new session in the same folder carries over only the Project line: Validation and
     // Session belong to the session that wrote them.
+    const projectBaseline = (await $.store.get(`baseline:${e.cwd}`)) as number | undefined
+    if (projectBaseline !== undefined && !(await $.state.get(baselines)).value?.Project) {
+      await $.state.set(baselines, { ...((await $.state.get(baselines)).value ?? {}), Project: projectBaseline })
+    }
     if (!(await findEstimatesInTranscript($))) {
       const saved = (await $.store.get(`estimates:${e.cwd}`)) as Estimates | undefined
       const project = saved?.lines.filter(l => englishLabel(l.label) === 'Project') ?? []
@@ -241,11 +265,7 @@ export const register: Register = on => {
     // Subagent turns: their estimates and context are not the main session's.
     if (!e.agentId) {
       const lines = parseEstimates(e.answer ?? '')
-      if (lines.length > 0) {
-        const est: Estimates = { lines, at: await $.clock.now() }
-        await $.state.set(estimates, est)
-        await $.store.set(`estimates:${await $.session.cwd()}`, est)
-      }
+      if (lines.length > 0) await recordEstimates($, lines)
       if ((await $.state.get(isOn)).value ?? false) await refresh($).catch(() => {})
     }
 
@@ -295,7 +315,7 @@ export const register: Register = on => {
     if (mode === 'gauges' && e.surface !== 'terminal') {
       const { Svg } = $.ui.resolve(e)
             const maxWidth = Math.max(240, e.props.bodyColumns * PX_PER_COLUMN - 16)
-      const g = gaugesSvg({ segments: shown, maxTokens: snap.maxTokens, usedTokens: snap.usedTokens, limits: lims, estimates: est?.lines ?? [], now, maxWidth })
+      const g = gaugesSvg({ segments: shown, maxTokens: snap.maxTokens, usedTokens: snap.usedTokens, limits: lims, estimates: est?.lines ?? [], now, maxWidth, baselines: (await $.state.get(baselines)).value ?? {} })
       lastGauges = { surface: e.surface, bodyColumns: e.props.bodyColumns, maxWidth, oneRowWidth: g.oneRowWidth, isStacked: g.isStacked }
       return <Svg source={g.source} alt={g.alt} width={g.width} height={g.height} isInteractive />
     }
