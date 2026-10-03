@@ -342,6 +342,16 @@ should look, tested each version in the desktop app and in the terminal, and
 supplied the screenshots used here, while Claude wrote and revised the code and
 the text.
 
+## Make it your own
+
+Please feel free to fork this project and turn it into something that suits
+the way you work. The panel is a single mod of a few hundred lines, so it is a
+good place to start if you want to learn how Claude Code mods are made, and
+there is plenty of room for variations: different gauges, other figures,
+another layout for the terminal, or a completely different take on the same
+idea. If you build something nice, or improve something here, I would love to
+hear about it, and pull requests are very welcome.
+
 ## Did you find a bug or do you have a suggestion?
 
 Please let me know, by opening a new issue or a pull request, and include the
