@@ -216,6 +216,28 @@ from), so it stays in the conversation; turn the bar off to see it inline
 again. A reloaded session finds the latest block in the conversation by itself.
 
 
+## What it accesses
+
+- **No network, files or processes.** The mod only uses Claude Code's own
+  session data and its display. `claude plugin validate ~/.claude/skills/context-bar`
+  lists every call it makes.
+- **The conversation, locally.** It reads the session's usage figures, and
+  once per load the conversation itself, to find the latest estimates block.
+  Nothing is sent anywhere.
+- **A small local store** under `~/.claude/plugins/store/`: your on/off and
+  layout choice, the last limit readings, and the last estimates and Project
+  baseline per project folder (keyed by the folder's path). It never leaves
+  your machine.
+- **Its effect on the conversation** is display only: while the bar is on, the
+  estimates block is hidden from the replies as drawn, not removed.
+
+Cost in tokens: the mod itself adds nothing to the model's context. The
+optional skill adds its one-line listing to every session (about 120 tokens),
+its instructions when Claude first uses it (about 1,100 tokens), and the block
+Claude writes (about 100 tokens each time, which then stays in the
+conversation).
+
+
 ## Getting help
 
 To see what the mod sees right now (limits reported, shown and saved,
