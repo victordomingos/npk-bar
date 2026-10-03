@@ -46,7 +46,7 @@ const RING = 2 * R + STROKE // the ring's outer diameter
 const STACK_HEIGHT = 58
 const STACK_CY = 4 + RING / 2
 const STACK_LABEL_MAX = 10 // characters, then an ellipsis
-const TEXT_GAP = 5 // ring to its label
+const TEXT_GAP = 7 // ring to its label (room for the pace tick)
 const CELL_GAP = 14 // gauge to the next gauge
 const GAP = 1.2 // a ~1px surface gap between fills, in pathLength units (circumference ≈ 82px)
 
@@ -113,7 +113,7 @@ type Arc = { from: number; len: number; cls: string; title: string }
 function paceTick(cx: number, cy: number, fraction: number, title: string): string {
   const a = fraction * 2 * Math.PI
   // From mid-ring outwards only: the centre holds the number.
-  const [r1, r2] = [R - 1, R + STROKE / 2 + 3.5]
+  const [r1, r2] = [R - 1, R + STROKE / 2 + 2.5]
   const p = (r: number) => `${(cx + r * Math.sin(a)).toFixed(2)},${(cy - r * Math.cos(a)).toFixed(2)}`
   const [x1, y1] = p(r1).split(',')
   const [x2, y2] = p(r2).split(',')
