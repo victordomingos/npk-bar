@@ -29,7 +29,7 @@ before it announcing it, nothing after it justifying it.
 - Round times: `~1h`, `~3h`, `~40h`. Under an hour: `~30min`.
 - Write the labels in the language of the conversation; keep the shape of the
   line (`**Label:**`, the bar in backticks, `NN%`, `·`, the time left), which
-  tools such as the context-bar mod read.
+  tools such as the npk-bar mod read.
 
 ## When to emit
 

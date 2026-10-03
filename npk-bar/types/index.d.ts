@@ -16,7 +16,7 @@ export type Baselines = Record<string, number>
 
 declare module 'claude-code' {
   interface PluginState {
-    'context-bar': {
+    'npk-bar': {
       isOn: boolean
       layout: Layout
       snapshot: Snapshot | null

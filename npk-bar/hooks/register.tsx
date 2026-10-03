@@ -4,13 +4,13 @@ import type { Baselines, Estimate, Estimates, Layout, Limit, Segment, Snapshot }
 
 import { gaugesSvg, impliedTotal, pace, slipStatus, until } from './gauges'
 
-const isOn = { plugin: 'context-bar', key: 'isOn' } as const
-const layout = { plugin: 'context-bar', key: 'layout' } as const
+const isOn = { plugin: 'npk-bar', key: 'isOn' } as const
+const layout = { plugin: 'npk-bar', key: 'layout' } as const
 const LAYOUTS: Layout[] = ['compact', 'full', 'gauges']
-const snapshot = { plugin: 'context-bar', key: 'snapshot' } as const
-const limits = { plugin: 'context-bar', key: 'limits' } as const
-const baselines = { plugin: 'context-bar', key: 'baselines' } as const
-const estimates = { plugin: 'context-bar', key: 'estimates' } as const
+const snapshot = { plugin: 'npk-bar', key: 'snapshot' } as const
+const limits = { plugin: 'npk-bar', key: 'limits' } as const
+const baselines = { plugin: 'npk-bar', key: 'baselines' } as const
+const estimates = { plugin: 'npk-bar', key: 'estimates' } as const
 
 // Estimates older than this (from a previous session in the same folder) are not shown.
 const MAX_ESTIMATE_AGE_MS = 3 * 24 * 3600 * 1000
@@ -119,7 +119,7 @@ let lastRefresh = 0
 // CSS px a text column spans on the desktop band (estimated from screenshots; `status` shows the
 // figures the last drawing used, to recalibrate).
 const PX_PER_COLUMN = 9
-// What the last gauges drawing measured, for `/context-bar status`.
+// What the last gauges drawing measured, for `/npk-bar status`.
 let lastGauges: { surface: string; bodyColumns: number; maxWidth: number; oneRowWidth: number; isStacked: boolean } | null = null
 
 // The transcript is scanned for an estimates block once per load, not on every refresh.
@@ -197,7 +197,7 @@ async function refresh($: EngineInterface) {
   await $.state.set(snapshot, snap)
 }
 
-// `/context-bar status`: what the mod sees right now, for reporting problems.
+// `/npk-bar status`: what the mod sees right now, for reporting problems.
 async function status($: EngineInterface): Promise<string> {
   const usage = await $.session.usage()
   const lims = (await $.state.get(limits)).value ?? []
@@ -219,8 +219,8 @@ async function status($: EngineInterface): Promise<string> {
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
-      name: 'context-bar',
-      description: 'Toggle the context bar; compact | full | gauges picks the layout; status shows what it sees',
+      name: 'npk-bar',
+      description: 'Toggle the npk-bar panel; compact | full | gauges picks the layout; status shows what it sees',
     })
     if ((await $.store.get('isOn')) === true) await $.state.set(isOn, true)
     // No saved layout: the default depends on the surface (gauges on desktop, compact in a terminal),
@@ -243,8 +243,8 @@ export const register: Register = on => {
     return next(e)
   })
 
-  // /context-bar toggles; /context-bar compact|full|gauges switches the layout (and turns it on).
-  on('command.run', { command: 'context-bar' }, async ($, e) => {
+  // /npk-bar toggles; /npk-bar compact|full|gauges switches the layout (and turns it on).
+  on('command.run', { command: 'npk-bar' }, async ($, e) => {
     const arg = e.args.trim().toLowerCase() as Layout
     if ((arg as string) === 'status') return { text: await status($) }
     const isLayout = LAYOUTS.includes(arg)
@@ -258,7 +258,7 @@ export const register: Register = on => {
     if (now) await refresh($).catch(() => {})
     const current = (await $.state.get(layout)).value ?? 'gauges on desktop, compact in a terminal'
 
-    return { text: now ? `Context bar on (${current}).` : 'Context bar off.' }
+    return { text: now ? `npk-bar on (${current}).` : 'npk-bar off.' }
   })
 
   on('tool.call', async ($, e, next) => {

@@ -1,4 +1,4 @@
-# Context Bar for Claude Code
+# npk-bar
 ![Claude Code mod](https://img.shields.io/badge/Claude%20Code-mod-D97757) ![Desktop and terminal](https://img.shields.io/badge/runs%20in-desktop%20%C2%B7%20terminal-555) ![No API calls](https://img.shields.io/badge/API%20calls-none-2a78d6)
 
 A Claude Code mod that keeps an eye on the things you would otherwise check by
@@ -13,11 +13,11 @@ estimates skill adds its listing, and the short block Claude writes per reply).
 It sits just above the prompt, in the Code tab of the Claude desktop app or in
 the terminal:
 
-![context-bar above the prompt in the Claude desktop app](context-bar/docs/in-window.png)
+![npk-bar above the prompt in the Claude desktop app](npk-bar/docs/in-window.png)
 
 The panel on its own, with every gauge filled in:
 
-![context-bar gauges in the Claude desktop app](context-bar/docs/gauges-wide.png)
+![npk-bar gauges in the Claude desktop app](npk-bar/docs/gauges-wide.png)
 
 Context, the 5-hour and weekly limits, and the estimates for validation,
 session and project, each as a ring: see [Reading the panel](#reading-the-panel)
@@ -25,17 +25,17 @@ for what every number, colour and mark means.
 
 On a narrow window the labels move under the rings and the gauges wrap:
 
-![context-bar gauges on a narrow window](context-bar/docs/gauges-narrow.png)
+![npk-bar gauges on a narrow window](npk-bar/docs/gauges-narrow.png)
 
 It follows the app's light or dark theme:
 
-![context-bar gauges in dark mode](context-bar/docs/gauges-dark.png)
+![npk-bar gauges in dark mode](npk-bar/docs/gauges-dark.png)
 
 In a terminal, which cannot draw images, it shows the same figures as text,
 with the colour cues on the bars and numbers instead of rings (rendered from
 the mod's own text layout):
 
-![context-bar in an 80-column terminal](context-bar/docs/terminal-80-columns.png)
+![npk-bar in an 80-column terminal](npk-bar/docs/terminal-80-columns.png)
 
 
 ## Installation and dependencies:
@@ -51,19 +51,19 @@ personal skills folder, where Claude Code loads them from.
 On macOS and Linux:
 
 ```
-git clone https://github.com/victordomingos/claude-mods.git ~/dev/claude-mods
+git clone https://github.com/victordomingos/npk-bar.git ~/dev/npk-bar
 mkdir -p ~/.claude/skills
-ln -s ~/dev/claude-mods/context-bar ~/.claude/skills/context-bar
-ln -s ~/dev/claude-mods/skills/progress-estimates ~/.claude/skills/progress-estimates
+ln -s ~/dev/npk-bar/npk-bar ~/.claude/skills/npk-bar
+ln -s ~/dev/npk-bar/skills/progress-estimates ~/.claude/skills/progress-estimates
 ```
 
 On Windows (PowerShell; a junction needs no administrator rights):
 
 ```
-git clone https://github.com/victordomingos/claude-mods.git "$env:USERPROFILE\dev\claude-mods"
+git clone https://github.com/victordomingos/npk-bar.git "$env:USERPROFILE\dev\npk-bar"
 New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills"
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\context-bar" -Target "$env:USERPROFILE\dev\claude-mods\context-bar"
-New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\progress-estimates" -Target "$env:USERPROFILE\dev\claude-mods\skills\progress-estimates"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\npk-bar" -Target "$env:USERPROFILE\dev\npk-bar\npk-bar"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\progress-estimates" -Target "$env:USERPROFILE\dev\npk-bar\skills\progress-estimates"
 ```
 
 If the mod does not load from a junction on your machine, copy the folders
@@ -76,10 +76,10 @@ without it): Claude would get two sets of instructions for the same block.
 Check that it is in place:
 
 ```
-claude plugin validate ~/.claude/skills/context-bar
+claude plugin validate ~/.claude/skills/npk-bar
 ```
 
-It should end with `Validation passed`. On Windows, use `"$env:USERPROFILE\.claude\skills\context-bar"`.
+It should end with `Validation passed`. On Windows, use `"$env:USERPROFILE\.claude\skills\npk-bar"`.
 
 To update later, `git pull` in the clone: an open session reloads the mod by
 itself. To uninstall, delete the links in `~/.claude/skills` (Windows:
@@ -98,7 +98,7 @@ up a newly installed mod. To keep a conversation, restart and resume it
 Then turn it on once:
 
 ```
-/context-bar
+/npk-bar
 ```
 
 The choice is remembered on that machine. Until you pick a layout, it is
@@ -116,27 +116,27 @@ yet) and updates it after the first reply.**
 Turn the bar on or off:
 
 ```
-/context-bar
+/npk-bar
 ```
 
 Pick a layout (this also turns it on):
 
 ```
-/context-bar gauges
+/npk-bar gauges
 ```
 
 ```
-/context-bar compact
+/npk-bar compact
 ```
 
 ```
-/context-bar full
+/npk-bar full
 ```
 
 See what the mod sees right now, to report a problem:
 
 ```
-/context-bar status
+/npk-bar status
 ```
 
 | Layout | What it shows |
@@ -147,11 +147,11 @@ See what the mod sees right now, to report a problem:
 
 The `compact` layout in the desktop app:
 
-![context-bar compact layout](context-bar/docs/compact-desktop.png)
+![npk-bar compact layout](npk-bar/docs/compact-desktop.png)
 
 The `full` layout, with limits and estimates side by side (dark theme):
 
-![context-bar full layout](context-bar/docs/full-dark.png)
+![npk-bar full layout](npk-bar/docs/full-dark.png)
 
 
 ## Reading the panel
@@ -241,7 +241,7 @@ again. A reloaded session finds the latest block in the conversation by itself.
 ## What it accesses
 
 - **No network, files or processes.** The mod only uses Claude Code's own
-  session data and its display. `claude plugin validate ~/.claude/skills/context-bar`
+  session data and its display. `claude plugin validate ~/.claude/skills/npk-bar`
   lists every call it makes.
 - **The conversation, locally.** It reads the session's usage figures, and
   once per load the conversation itself, to find the latest estimates block.
@@ -266,7 +266,7 @@ To see what the mod sees right now (limits reported, shown and saved,
 estimates, the last refresh and the gauge measurements), use:
 
 ```
-/context-bar status
+/npk-bar status
 ```
 
 A healthy output looks like this:
@@ -281,15 +281,15 @@ gauges: desktop, 104 columns → 920px allowed, one row needs 790px → labels b
 last refresh: 12s ago
 ```
 
-- **`/context-bar` is not a known command**: the session started before the
+- **`/npk-bar` is not a known command**: the session started before the
   mod was installed, or the folder is nested one level too deep. Start a new
   session.
 - **The command answers but nothing shows**: wait for the next reply, then look
-  in the transcript for a dim line starting with `context-bar:`, which names
+  in the transcript for a dim line starting with `npk-bar:`, which names
   the problem.
 
 
 ## Did you find a bug or do you have a suggestion?
 
 Please let me know, by opening a new issue or a pull request, and include the
-output of `/context-bar status`.
+output of `/npk-bar status`.
