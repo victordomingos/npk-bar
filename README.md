@@ -330,9 +330,8 @@ name the problem.
 
 ## How this was made
 
-The original idea came from Anthropic's newsletter that introduced mods for
-Claude Code, on 3 October 2026, which suggested a context bar drawn above the
-prompt. This project started from that suggestion and grew from there.
+This project was inspired by a suggestion in Anthropic's newsletter when mods
+for Claude Code were launched, on 3 October 2026, and grew from there.
 
 The code, the documentation and the companion skill in this repository were
 written by Claude, under the guidance and supervision of Victor Domingos. The
