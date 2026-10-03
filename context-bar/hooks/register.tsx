@@ -27,7 +27,8 @@ const fmt = (n: number) =>
 // Text layouts: the same pace status as the gauges, in terminal colours.
 const TEXT_STATUS = { good: 'green', warning: 'yellow', serious: '#ec835a', critical: 'red' } as const
 
-const LIMIT_LABELS: Record<string, string> = { five_hour: 'Session', seven_day: 'Week' }
+// Named as limits, so they never read like the Session estimate beside them.
+const LIMIT_LABELS: Record<string, string> = { five_hour: '5h limit', seven_day: 'Week limit' }
 const LIMIT_WINDOW_MS: Record<string, number> = { five_hour: 5 * 3600_000, seven_day: 7 * 24 * 3600_000 }
 
 function toLimits(raw: readonly { kind: string; percentUsed: number; resetsAt?: string }[]): Limit[] {
@@ -43,10 +44,23 @@ const share = (n: number, of: number) => {
   return n > 0 && pct < 1 ? '<1%' : `${Math.round(pct)}%`
 }
 
+// The bar is in English whatever language the replies are in: known estimate labels are translated
+// (Portuguese for now); any other label is shown as written.
+const ESTIMATE_LABELS: Record<string, string> = {
+  'testes em curso': 'Tests',
+  testes: 'Tests',
+  'tests in progress': 'Tests',
+  'sessão': 'Session',
+  sessao: 'Session',
+  projeto: 'Project',
+  projecto: 'Project',
+}
+const englishLabel = (label: string) => ESTIMATE_LABELS[label.toLowerCase()] ?? label
+
 function parseEstimates(text: string): Estimate[] {
   const lines: Estimate[] = []
   for (const m of text.matchAll(ESTIMATE_LINE)) {
-    lines.push({ label: m[1].trim(), percent: Math.min(100, Number(m[2])), left: (m[3] ?? '').trim() })
+    lines.push({ label: englishLabel(m[1].trim()), percent: Math.min(100, Number(m[2])), left: (m[3] ?? '').trim() })
   }
   return lines
 }
@@ -100,7 +114,10 @@ let scannedTranscript = false
 async function savedLimits($: EngineInterface): Promise<Limit[]> {
   const saved = ((await $.store.get('limits')) ?? []) as Limit[]
   const now = await $.clock.now()
-  return saved.filter(l => l.resetsAtMs === null || l.resetsAtMs > now)
+  const renamed: Record<string, string> = { Session: '5h limit', Week: 'Week limit' }
+  return saved
+    .filter(l => l.resetsAtMs === null || l.resetsAtMs > now)
+    .map(l => ({ ...l, label: renamed[l.label] ?? l.label }))
 }
 
 async function refresh($: EngineInterface) {
@@ -229,7 +246,9 @@ export const register: Register = on => {
     if (!snap) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
-    const est = (await $.state.get(estimates)).value ?? null
+    const saved = (await $.state.get(estimates)).value ?? null
+    // Saved before labels were translated: translate them here too.
+    const est = saved && { ...saved, lines: saved.lines.map(l => ({ ...l, label: englishLabel(l.label) })) }
     const mode = (await $.state.get(layout)).value ?? (e.surface === 'terminal' ? 'compact' : 'gauges')
     const full = mode === 'full'
     const now = await $.clock.now()

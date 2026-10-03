@@ -13,10 +13,10 @@ costs nothing: no API calls, and nothing is added to the model's context.
 
 - **Context**: one ring split by the biggest `/context` categories, the rest
   merged as *Other*, with the token total.
-- **Session and Week**: how much of each limit is used and when it resets. The
+- **5h limit and Week limit**: how much of each limit is used and when it resets. The
   tick marks where an even pace would put you; the arc is green under that
   pace, then yellow, orange and red the further over it you go.
-- **Warnings**: the inside of the Context, Session and Week rings turns yellow
+- **Warnings**: the inside of the Context and limit rings turns yellow
   from 50%, orange from 75%, red from 90%, and pulses from 93%.
 - **Estimates** (optional): progress of the tests in flight, the session and
   the project, with the time left against the implied total.
@@ -99,7 +99,7 @@ The choice is remembered on that machine. Until you pick a layout, it is
 
 **Note:  
 The limit figures come from Claude Code itself and only exist on a Pro or Max
-subscription; with an API key the Session and Week gauges are not shown. They
+subscription; with an API key the limit gauges are not shown. They
 appear after the first reply of a session, then stay up to date.**
 
 
@@ -134,8 +134,9 @@ Pick a layout (this also turns it on):
 
 ## Progress estimates (optional)
 
-The estimate gauges read a short block at the end of Claude's replies, in any
-language, one line per item:
+The estimate gauges read a short block at the end of Claude's replies, one
+line per item. The labels can be in another language: Portuguese ones are
+shown in English, others as written.
 
 ```
 **Tests in progress:** `████████████░░░░░░░░` 60% · ~1h
