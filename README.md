@@ -25,7 +25,8 @@ On a narrow window the labels move under the rings and the gauges wrap:
 
 ![context-bar gauges on a narrow window](context-bar/docs/gauges-narrow.png)
 
-In a terminal, which cannot draw images, it shows the same figures as text:
+In a terminal, which cannot draw images, it shows the same figures as text
+(rendered from the mod's own text layout):
 
 ![context-bar in an 80-column terminal](context-bar/docs/terminal-80-columns.png)
 
@@ -58,6 +59,9 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\context-bar" 
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\progress-estimates" -Target "$env:USERPROFILE\dev\claude-mods\skills\progress-estimates"
 ```
 
+If the mod does not load from a junction on your machine, copy the folders
+instead of linking them, and copy them again after each `git pull`.
+
 Skip the `progress-estimates` line if you already use another skill that
 writes progress estimates: Claude would get two sets of instructions for the
 same block.
@@ -68,15 +72,14 @@ Check that it is in place:
 claude plugin validate ~/.claude/skills/context-bar
 ```
 
-It should end with `Validation passed` (warnings about `types` and `author`
-are expected). On Windows, use `"$env:USERPROFILE\.claude\skills\context-bar"`.
+It should end with `Validation passed` (a warning about `types` is expected). On Windows, use `"$env:USERPROFILE\.claude\skills\context-bar"`.
 
 To update later, `git pull` in the clone: an open session reloads the mod by
 itself. To uninstall, delete the links in `~/.claude/skills` (Windows:
 `%USERPROFILE%\.claude\skills`); the clone can go too.
 
-The mod and the skill are plain TypeScript and Markdown with no scripts or
-binaries, so they behave the same on macOS, Linux and Windows.
+The mod and the skill are plain TypeScript and Markdown, with no scripts,
+binaries or OS-specific code. Tested on macOS.
 
 
 ## How to use

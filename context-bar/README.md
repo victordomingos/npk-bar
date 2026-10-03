@@ -3,7 +3,8 @@
 A Claude Code mod: context window, session/week limits and progress estimates
 above the prompt, toggled with `/context-bar`.
 
-Screenshots, installation and usage: see the [repository's README](../README.md).
+Screenshots, installation and usage: see the README at the root of the
+[claude-mods repository](https://github.com/victordomingos/claude-mods).
 
 Quick reference:
 
