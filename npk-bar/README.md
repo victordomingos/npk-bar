@@ -20,4 +20,4 @@ Quick reference:
 | `/npk-bar compact` | A short text bar (the default in a terminal) |
 | `/npk-bar full` | A wider text panel, with a bar for each limit and estimate |
 | `/npk-bar status` | Shows what the mod sees right now, for reporting problems |
-| `/npk-bar about` | Shows the version, a short description and the credits |
+| `/npk-bar about` | Shows the version, a short description, the credits and where the idea came from |

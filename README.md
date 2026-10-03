@@ -156,7 +156,7 @@ See what the mod sees right now, which is useful when reporting a problem:
 /npk-bar status
 ```
 
-Show the version, a short description and the credits:
+Show the version, a short description, the credits and where the idea came from:
 
 ```
 /npk-bar about

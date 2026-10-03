@@ -199,11 +199,13 @@ async function refresh($: EngineInterface) {
 
 // `/npk-bar about`. Keep VERSION in step with .claude-plugin/plugin.json.
 const VERSION = '0.1.0'
-// Claude Code already prefixes the output with "npk-bar: ", so it opens with the version. Plain
-// text with blank lines between paragraphs reads well both rendered and raw.
+// One markdown text, both drawn (by the CommandOutput hook below, without Claude Code's
+// "npk-bar: " prefix) and stored as the command's output.
 const ABOUT = [
-  `${VERSION} · Context, usage limits and progress estimates above the Claude Code prompt.`,
-  'Made by Claude Opus 5.5 in Claude Code, with Claude Fable 5.1 as advisor, under the guidance and supervision of Victor Domingos.',
+  `**npk-bar ${VERSION}**`,
+  'Context, usage limits and progress estimates above the Claude Code prompt.',
+  '*Made by Claude Opus 5.5 in Claude Code, with Claude Fable 5.1 as advisor, under the guidance and supervision of Victor Domingos.*',
+  "*Inspired by a suggestion in Anthropic's newsletter when mods for Claude Code were launched (3 October 2026).*",
   'https://github.com/victordomingos/npk-bar',
 ].join('\n\n')
 
@@ -292,24 +294,11 @@ export const register: Register = on => {
     return next(e)
   })
 
-  // `/npk-bar about` draws its own row: a bold title instead of Claude Code's "npk-bar: " prefix.
-  // The stored row keeps the plain ABOUT text.
+  // `/npk-bar about` draws its own row, so the bold title is not preceded by "npk-bar: ".
   on('ui.render', { component: 'CommandOutput' }, async ($, e, next) => {
     if (e.props.command !== 'npk-bar' || e.props.args.trim().toLowerCase() !== 'about') return next(e)
-    const { Box, Text } = $.ui.resolve(e)
-    return (
-      <Box flexDirection="column">
-        <Text bold>npk-bar {VERSION}</Text>
-        <Text>Context, usage limits and progress estimates above the Claude Code prompt.</Text>
-        <Text> </Text>
-        <Text dimColor>
-          Made by Claude Opus 5.5 in Claude Code, with Claude Fable 5.1 as advisor, under the guidance and
-          supervision of Victor Domingos.
-        </Text>
-        <Text> </Text>
-        <Text>https://github.com/victordomingos/npk-bar</Text>
-      </Box>
-    )
+    const { Markdown } = $.ui.resolve(e)
+    return <Markdown text={ABOUT} />
   })
 
   // While the bar is on it already shows the estimates, so the block is hidden from the reply as
