@@ -72,7 +72,7 @@ Check that it is in place:
 claude plugin validate ~/.claude/skills/context-bar
 ```
 
-It should end with `Validation passed` (a warning about `types` is expected). On Windows, use `"$env:USERPROFILE\.claude\skills\context-bar"`.
+It should end with `Validation passed`. On Windows, use `"$env:USERPROFILE\.claude\skills\context-bar"`.
 
 To update later, `git pull` in the clone: an open session reloads the mod by
 itself. To uninstall, delete the links in `~/.claude/skills` (Windows:
