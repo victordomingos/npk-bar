@@ -69,7 +69,10 @@ function parseEstimates(text: string): Estimate[] {
 }
 
 // 20-block bar as the estimativas skill draws it: never full below 100%, never empty above 0%.
-const blocks = (percent: number) => Math.min(percent < 100 ? 19 : 20, Math.max(percent > 0 ? 1 : 0, Math.round(percent / 5)))
+const blocks = (percent: number, of = 20) =>
+  Math.min(percent < 100 ? of - 1 : of, Math.max(percent > 0 ? 1 : 0, Math.round((percent / 100) * of)))
+// The full layout's limit and estimate rows: short bars, so the two columns fit side by side.
+const ROW_BAR = 10
 
 // Top `n` used categories by size, the rest folded into one `Other`, then free space and buffer.
 // Neutral parts (Other, buffer, free) have no colour: drawn in the text colour, told apart by pattern,
@@ -297,10 +300,6 @@ export const register: Register = on => {
     const now = await $.clock.now()
     const lims = (await $.state.get(limits)).value ?? []
     const resets = (l: Limit) => (l.resetsAtMs !== null ? until(l.resetsAtMs - now) : '')
-    const limitText = (l: Limit, short: boolean) =>
-      short
-        ? `${l.label} ${Math.round(l.percent)}%${resets(l) ? ` ${resets(l)}` : ''}`
-        : `${Math.round(l.percent)}%${resets(l) ? ` · resets in ${resets(l)}` : ''}`
     const total = snap.segments.reduce((a, s) => a + s.tokens, 0) || snap.maxTokens
     const pct = Math.round((snap.usedTokens / snap.maxTokens) * 100)
     const ratio = `${fmt(snap.usedTokens)}/${fmt(snap.maxTokens)}`
@@ -368,8 +367,8 @@ export const register: Register = on => {
     const estLabels = Math.max(0, ...(est?.lines.map(l => l.label.length) ?? [])) + 1
     // Limits and estimates side by side when both columns fit (label, 20-block bar, ~25 cells of
     // text each), else one under the other, sharing one label width so all bars line up.
-    const limitColumn = limitLabels + 20 + 26
-    const estColumn = estLabels + 20 + 18
+    const limitColumn = limitLabels + ROW_BAR + 15
+    const estColumn = estLabels + ROW_BAR + 14
     const isTwoColumns = lims.length > 0 && (est?.lines.length ?? 0) > 0 && limitColumn + 3 + estColumn <= columns
     const limitLabelWidth = isTwoColumns ? limitLabels : Math.max(limitLabels, estLabels)
     const estLabelWidth = isTwoColumns ? estLabels : Math.max(limitLabels, estLabels)
@@ -381,9 +380,12 @@ export const register: Register = on => {
           <Text>{l.label}:</Text>
         </Box>
         <Text>
-          <Text color={TEXT_STATUS[pace(l, now).status]}>{'█'.repeat(blocks(l.percent))}</Text>
-          <Text>{'░'.repeat(20 - blocks(l.percent))}</Text>
-          <Text> {limitText(l, false)}</Text>
+          <Text color={TEXT_STATUS[pace(l, now).status]}>{'█'.repeat(blocks(l.percent, ROW_BAR))}</Text>
+          <Text>{'░'.repeat(ROW_BAR - blocks(l.percent, ROW_BAR))}</Text>
+          <Text>
+            {' '}
+            {Math.round(l.percent)}%{resets(l) ? ` · ↻ ${resets(l)}` : ''}
+          </Text>
         </Text>
       </Box>
     ))
@@ -396,8 +398,8 @@ export const register: Register = on => {
             <Text>{l.label}:</Text>
           </Box>
           <Text>
-            <Text color={slip ? TEXT_STATUS[slip] : '#9085e9'}>{'█'.repeat(blocks(l.percent))}</Text>
-            <Text>{'░'.repeat(20 - blocks(l.percent))}</Text>
+            <Text color={slip ? TEXT_STATUS[slip] : '#9085e9'}>{'█'.repeat(blocks(l.percent, ROW_BAR))}</Text>
+            <Text>{'░'.repeat(ROW_BAR - blocks(l.percent, ROW_BAR))}</Text>
             <Text>
               {' '}
               {l.percent}%{l.left ? ` · ${l.left}` : ''}

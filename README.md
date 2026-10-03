@@ -135,7 +135,7 @@ See what the mod sees right now, to report a problem:
 |---|---|
 | `gauges` | The ring gauges above (desktop app; a terminal shows `compact` instead) |
 | `compact` | One line (two when narrow): a short bar, `% used tokens/window`, and the limit and estimate percentages; each limit's percentage is coloured by pace |
-| `full` | A full-width bar, the top categories, and a 20-block bar per limit and per estimate (limits and estimates side by side when there is room), coloured like the rings |
+| `full` | A full-width bar, the top categories, and a short bar per limit and per estimate (limits and estimates side by side when there is room), coloured like the rings |
 
 The `compact` layout in the desktop app:
 
