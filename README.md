@@ -190,6 +190,8 @@ means there is no estimate for that line yet (Validation shows only while you
 have tests pending). A new session in a folder carries over only the Project
 estimate; Validation and Session belong to the session that wrote them.
 
+![a new session: only the Project estimate carried over](context-bar/docs/gauges-no-estimates.png)
+
 
 ## Progress estimates (optional)
 
