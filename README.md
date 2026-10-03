@@ -141,6 +141,10 @@ The `compact` layout in the desktop app:
 
 ![context-bar compact layout](context-bar/docs/compact-desktop.png)
 
+The `full` layout, with limits and estimates side by side (dark theme):
+
+![context-bar full layout](context-bar/docs/full-dark.png)
+
 
 ## Reading the panel
 
