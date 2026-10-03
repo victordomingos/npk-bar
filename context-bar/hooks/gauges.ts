@@ -300,6 +300,9 @@ export function gaugesSvg(input: {
   const light = colours.map((c, i) => `.c${i}{stroke:${c.split(',')[0]}}.c${i}f{fill:${c.split(',')[0]}}`).join('')
   const dark = colours.map((c, i) => `.c${i}{stroke:${c.split(',')[1]}}.c${i}f{fill:${c.split(',')[1]}}`).join('')
   const style =
+    // Declaring both schemes keeps the frame transparent in a dark app (an embedded document that
+    // only claims light gets an opaque white backdrop) and lets the dark rules below apply.
+    `:root{color-scheme:light dark}` +
     `circle{fill:none;stroke-width:${STROKE}}circle[class$="f"]{stroke:none}` +
     `text{font:500 9px system-ui,-apple-system,sans-serif;text-anchor:start;fill:#3d3d3a}.v{font-weight:600;font-size:8.5px;text-anchor:middle}.c{text-anchor:middle}` +
     `.s{font-weight:400;font-size:8.5px;fill:#73726c}.g{font-weight:400;font-size:9px;text-anchor:start}` +
@@ -319,7 +322,7 @@ export function gaugesSvg(input: {
   ].join('; ')
 
   return {
-    source: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}"><style>${style}</style>${parts.join('')}</svg>`,
+    source: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" style="color-scheme:light dark;background:transparent"><style>${style}</style>${parts.join('')}</svg>`,
     alt,
     width,
     height,
