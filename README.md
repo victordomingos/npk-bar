@@ -232,10 +232,10 @@ again. A reloaded session finds the latest block in the conversation by itself.
   estimates block is hidden from the replies as drawn, not removed.
 
 Cost in tokens: the mod itself adds nothing to the model's context. The
-optional skill adds its one-line listing to every session (about 120 tokens),
-its instructions when Claude first uses it (about 1,100 tokens), and the block
-Claude writes (about 100 tokens each time, which then stays in the
-conversation).
+optional skill adds its one-line listing to every session (about 110 tokens),
+its instructions when Claude first uses it (about 800 tokens, plus about 330
+during a round of tests), and the block Claude writes (about 100 tokens each
+time, which then stays in the conversation).
 
 
 ## Getting help
