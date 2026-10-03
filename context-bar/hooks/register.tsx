@@ -272,6 +272,17 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // While the bar is on it already shows the estimates, so the block is hidden from the reply as
+  // drawn. Display only: the block stays in the conversation, which is where the bar reads it.
+  on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
+    if (!((await $.state.get(isOn)).value ?? false) || parseEstimates(e.props.text).length === 0) return next(e)
+    const text = e.props.text
+      .replace(ESTIMATE_LINE, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trimEnd()
+    return next({ ...e, props: { ...e.props, text } })
+  })
+
   on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
     if (e.props.hasSurvey || !((await $.state.get(isOn)).value ?? false)) return next(e)
     const snap = (await $.state.get(snapshot)).value ?? null

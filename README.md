@@ -151,7 +151,10 @@ the [progress-estimates](skills/progress-estimates/SKILL.md) skill from this
 repository (see Installation): it tells Claude when to write the block and how
 to estimate honestly. Without it, you can simply ask Claude for the block.
 
-A reloaded session finds the latest block in the conversation by itself.
+While the bar is on, the block is hidden from the replies as you see them: the
+bar already shows it. Claude still writes it (that is where the bar reads it
+from), so it stays in the conversation; turn the bar off to see it inline
+again. A reloaded session finds the latest block in the conversation by itself.
 
 
 ## Getting help
