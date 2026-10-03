@@ -1,5 +1,5 @@
 # npk-bar
-![Claude Code mod](https://img.shields.io/badge/Claude%20Code-mod-D97757) ![Desktop and terminal](https://img.shields.io/badge/runs%20in-desktop%20%C2%B7%20terminal-555) ![No API calls](https://img.shields.io/badge/API%20calls-none-2a78d6) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Claude Code mod](https://img.shields.io/badge/Claude%20Code-mod-D97757) ![Desktop and terminal](https://img.shields.io/badge/runs%20in-desktop%20%C2%B7%20terminal-555) ![No extra API calls](https://img.shields.io/badge/extra%20API%20calls-none-2a78d6) [![GitHub License](https://img.shields.io/github/license/victordomingos/npk-bar.svg)](https://github.com/victordomingos/npk-bar/blob/main/LICENSE)
 
 A small mod for Claude Code that keeps an eye on the things you would
 otherwise have to check by hand: how full the context window is and what is
