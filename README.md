@@ -20,6 +20,10 @@ On a narrow window the labels move under the rings and the gauges wrap:
 
 ![context-bar gauges on a narrow window](context-bar/docs/gauges-narrow.png)
 
+It follows the app's light or dark theme:
+
+![context-bar gauges in dark mode](context-bar/docs/gauges-dark.png)
+
 In a terminal, which cannot draw images, it shows the same figures as text,
 without the colour cues of the rings (rendered from the mod's own text layout):
 

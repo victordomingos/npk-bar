@@ -364,8 +364,15 @@ export const register: Register = on => {
     // proportional font.
     // Row labels in a fixed-width box (padding with spaces does not align on the desktop's
     // proportional font), one width per column.
-    const limitLabelWidth = Math.max(0, ...lims.map(l => l.label.length)) + 1
-    const estLabelWidth = Math.max(0, ...(est?.lines.map(l => l.label.length) ?? [])) + 1
+    const limitLabels = Math.max(0, ...lims.map(l => l.label.length)) + 1
+    const estLabels = Math.max(0, ...(est?.lines.map(l => l.label.length) ?? [])) + 1
+    // Limits and estimates side by side when both columns fit (label, 20-block bar, ~25 cells of
+    // text each), else one under the other, sharing one label width so all bars line up.
+    const limitColumn = limitLabels + 20 + 26
+    const estColumn = estLabels + 20 + 18
+    const isTwoColumns = lims.length > 0 && (est?.lines.length ?? 0) > 0 && limitColumn + 3 + estColumn <= columns
+    const limitLabelWidth = isTwoColumns ? limitLabels : Math.max(limitLabels, estLabels)
+    const estLabelWidth = isTwoColumns ? estLabels : Math.max(limitLabels, estLabels)
     const base = (await $.state.get(baselines)).value ?? {}
 
     const limitRows = lims.map(l => (
@@ -399,11 +406,6 @@ export const register: Register = on => {
         </Box>
       )
     })
-    // Limits and estimates side by side when both columns fit (label, 20-block bar, ~25 cells of
-    // text each), else one under the other.
-    const limitColumn = limitLabelWidth + 20 + 26
-    const estColumn = estLabelWidth + 20 + 18
-    const isTwoColumns = limitRows.length > 0 && estRows.length > 0 && limitColumn + 3 + estColumn <= columns
 
     return (
       <Box flexDirection="column">
