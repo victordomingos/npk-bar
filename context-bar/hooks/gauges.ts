@@ -96,7 +96,7 @@ export function impliedTotal(e: Estimate): number | null {
 // Slippage: how much the implied total grew since its baseline. Coloured like the limits' pace:
 // green on or within 10% of the estimate, then yellow, orange (from +25%) and red (from +50%).
 // No baseline yet: the neutral estimate colour.
-function slipStatus(total: number | null, baseline: number | undefined): PaceStatus | null {
+export function slipStatus(total: number | null, baseline: number | undefined): PaceStatus | null {
   if (total === null || baseline === undefined) return null
   const growth = total / baseline - 1
   return growth <= 0.1 ? 'good' : growth <= 0.25 ? 'warning' : growth <= 0.5 ? 'serious' : 'critical'

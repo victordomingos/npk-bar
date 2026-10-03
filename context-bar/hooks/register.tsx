@@ -2,7 +2,7 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { Baselines, Estimate, Estimates, Layout, Limit, Segment, Snapshot } from '../types'
 
-import { gaugesSvg, impliedTotal, pace, until } from './gauges'
+import { gaugesSvg, impliedTotal, pace, slipStatus, until } from './gauges'
 
 const isOn = { plugin: 'context-bar', key: 'isOn' } as const
 const layout = { plugin: 'context-bar', key: 'layout' } as const
@@ -309,7 +309,7 @@ export const register: Register = on => {
     // columns are discounted to keep the bar on one row.
     const columns = e.surface === 'terminal' ? e.props.bodyColumns : Math.floor(e.props.bodyColumns * 0.8)
     const width = full
-      ? Math.max(10, Math.min(100, columns - 6))
+      ? Math.max(10, Math.min(100, e.surface === 'terminal' ? columns - 6 : Math.floor(e.props.bodyColumns * 0.62)))
       : 20
     const shown = topSegments(snap.segments, 3)
     const split = cells(shown, total, width)
@@ -360,11 +360,56 @@ export const register: Register = on => {
     }
 
     const used = shown.filter(s => s.kind === 'used')
-    const labelWidth = est ? Math.max(...est.lines.map(l => l.label.length)) + 1 : 0
+    // Row labels in a fixed-width box: padding with spaces does not align on the desktop's
+    // proportional font.
+    // Row labels in a fixed-width box (padding with spaces does not align on the desktop's
+    // proportional font), one width per column.
+    const limitLabelWidth = Math.max(0, ...lims.map(l => l.label.length)) + 3
+    const estLabelWidth = Math.max(0, ...(est?.lines.map(l => l.label.length) ?? [])) + 3
+    const base = (await $.state.get(baselines)).value ?? {}
+
+    const limitRows = lims.map(l => (
+      <Box flexDirection="row">
+        <Box width={limitLabelWidth} flexShrink={0}>
+          <Text>{l.label}:</Text>
+        </Box>
+        <Text>
+          <Text color={TEXT_STATUS[pace(l, now).status]}>{'█'.repeat(blocks(l.percent))}</Text>
+          <Text>{'░'.repeat(20 - blocks(l.percent))}</Text>
+          <Text> {limitText(l, false)}</Text>
+        </Text>
+      </Box>
+    ))
+    const estRows = (est?.lines ?? []).map(l => {
+      // Same colours as the gauges: slippage from the first estimate, violet with none yet.
+      const slip = slipStatus(impliedTotal(l), base[l.label])
+      return (
+        <Box flexDirection="row">
+          <Box width={estLabelWidth} flexShrink={0}>
+            <Text>{l.label}:</Text>
+          </Box>
+          <Text>
+            <Text color={slip ? TEXT_STATUS[slip] : '#9085e9'}>{'█'.repeat(blocks(l.percent))}</Text>
+            <Text>{'░'.repeat(20 - blocks(l.percent))}</Text>
+            <Text>
+              {' '}
+              {l.percent}%{l.left ? ` · ${l.left}` : ''}
+            </Text>
+          </Text>
+        </Box>
+      )
+    })
+    // Limits and estimates side by side when both columns fit (label, 20-block bar, ~25 cells of
+    // text each), else one under the other.
+    const limitColumn = limitLabelWidth + 20 + 26
+    const estColumn = estLabelWidth + 20 + 18
+    const isTwoColumns = limitRows.length > 0 && estRows.length > 0 && limitColumn + 3 + estColumn <= columns
 
     return (
       <Box flexDirection="column">
-        <Text wrap="truncate">{bar}</Text>
+        <Box overflow="hidden">
+          <Text wrap="truncate">{bar}</Text>
+        </Box>
         <Text wrap="wrap">
           <Text bold>
             {pct}% used · {ratio}
@@ -380,26 +425,19 @@ export const register: Register = on => {
             </Text>
           ))}
         </Text>
-        {lims.map(l => (
-          <Text>
-            <Text>{(l.label + ':').padEnd(Math.max(labelWidth, ...lims.map(x => x.label.length + 1)) + 1)}</Text>
-            <Text color={TEXT_STATUS[pace(l, now).status]}>{'█'.repeat(blocks(l.percent))}</Text>
-            <Text>{'░'.repeat(20 - blocks(l.percent))}</Text>
-            <Text> {limitText(l, false)}</Text>
-          </Text>
-        ))}
-        {est &&
-          est.lines.map(l => (
-            <Text>
-              <Text>{(l.label + ':').padEnd(labelWidth + 1)}</Text>
-              <Text color="green">{'█'.repeat(blocks(l.percent))}</Text>
-              <Text>{'░'.repeat(20 - blocks(l.percent))}</Text>
-              <Text>
-                {' '}
-                {l.percent}%{l.left ? ` · ${l.left}` : ''}
-              </Text>
-            </Text>
-          ))}
+        {isTwoColumns ? (
+          <Box flexDirection="row" columnGap={3}>
+            <Box flexDirection="column" width={limitColumn} flexShrink={0}>
+              {limitRows}
+            </Box>
+            <Box flexDirection="column">{estRows}</Box>
+          </Box>
+        ) : (
+          <Box flexDirection="column">
+            {limitRows}
+            {estRows}
+          </Box>
+        )}
       </Box>
     )
   })
