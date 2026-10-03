@@ -292,6 +292,26 @@ export const register: Register = on => {
     return next(e)
   })
 
+  // `/npk-bar about` draws its own row: a bold title instead of Claude Code's "npk-bar: " prefix.
+  // The stored row keeps the plain ABOUT text.
+  on('ui.render', { component: 'CommandOutput' }, async ($, e, next) => {
+    if (e.props.command !== 'npk-bar' || e.props.args.trim().toLowerCase() !== 'about') return next(e)
+    const { Box, Text } = $.ui.resolve(e)
+    return (
+      <Box flexDirection="column">
+        <Text bold>npk-bar {VERSION}</Text>
+        <Text>Context, usage limits and progress estimates above the Claude Code prompt.</Text>
+        <Text> </Text>
+        <Text dimColor>
+          Made by Claude Opus 5.5 in Claude Code, with Claude Fable 5.1 as advisor, under the guidance and
+          supervision of Victor Domingos.
+        </Text>
+        <Text> </Text>
+        <Text>https://github.com/victordomingos/npk-bar</Text>
+      </Box>
+    )
+  })
+
   // While the bar is on it already shows the estimates, so the block is hidden from the reply as
   // drawn. Display only: the block stays in the conversation, which is where the bar reads it.
   on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
