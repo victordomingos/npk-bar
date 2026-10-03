@@ -34,7 +34,9 @@ const levelOf = (percent: number): Level =>
 const worse = (a: Level, b: Level): Level => (LEVEL_ORDER.indexOf(a) >= LEVEL_ORDER.indexOf(b) ? a : b)
 
 // Text layouts: the same pace status as the gauges, in terminal colours.
-const TEXT_STATUS = { good: 'green', warning: 'yellow', serious: '#ec835a', critical: 'red' } as const
+// Theme keys, not raw colours: Claude Code picks each one's light or dark shade, so yellow text
+// stays readable on the light theme.
+const TEXT_STATUS = { good: 'success', warning: 'warning', serious: 'claude', critical: 'error' } as const
 
 // Named as limits, so they never read like the Session estimate beside them.
 const LIMIT_LABELS: Record<string, string> = { five_hour: '5h limit', seven_day: 'Week limit' }
