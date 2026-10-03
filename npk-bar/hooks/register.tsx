@@ -199,11 +199,13 @@ async function refresh($: EngineInterface) {
 
 // `/npk-bar about`. Keep VERSION in step with .claude-plugin/plugin.json.
 const VERSION = '0.1.0'
+// Claude Code already prefixes the output with "npk-bar: ", so it opens with the version. Plain
+// text with blank lines between paragraphs reads well both rendered and raw.
 const ABOUT = [
-  `npk-bar ${VERSION}: context, usage limits and progress estimates above the Claude Code prompt.`,
-  'Generated with Claude (Claude Opus 5.5 in Claude Code, Claude Fable 5.1 as advisor) under the guidance and supervision of Victor Domingos.',
+  `${VERSION} · Context, usage limits and progress estimates above the Claude Code prompt.`,
+  'Made by Claude Opus 5.5 in Claude Code, with Claude Fable 5.1 as advisor, under the guidance and supervision of Victor Domingos.',
   'https://github.com/victordomingos/npk-bar',
-].join('\n')
+].join('\n\n')
 
 // `/npk-bar status`: what the mod sees right now, for reporting problems.
 async function status($: EngineInterface): Promise<string> {
