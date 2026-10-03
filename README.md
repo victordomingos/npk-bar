@@ -1,52 +1,56 @@
 # npk-bar
 ![Claude Code mod](https://img.shields.io/badge/Claude%20Code-mod-D97757) ![Desktop and terminal](https://img.shields.io/badge/runs%20in-desktop%20%C2%B7%20terminal-555) ![No API calls](https://img.shields.io/badge/API%20calls-none-2a78d6)
 
-A Claude Code mod that keeps an eye on the things you would otherwise check by
-hand: how full the context window is and what is filling it, how much of your
-session (5-hour) and weekly limits you have used, and how far along the
-current work is.
-
-It draws above the prompt and refreshes by itself at the end of every turn. The
-mod makes no API calls and adds nothing to the model's context (the optional
-estimates skill adds its listing, and the short block Claude writes per reply).
+A small mod for Claude Code that keeps an eye on the things you would
+otherwise have to check by hand: how full the context window is and what is
+filling it, how much of your 5-hour and weekly usage limits you have already
+spent, and how far along the current work is.
 
 It sits just above the prompt, in the Code tab of the Claude desktop app or in
-the terminal:
+the terminal, and it refreshes by itself at the end of every turn:
 
 ![npk-bar above the prompt in the Claude desktop app](npk-bar/docs/in-window.png)
 
-The panel on its own, with every gauge filled in:
+Here is the panel on its own, with every gauge filled in:
 
 ![npk-bar gauges in the Claude desktop app](npk-bar/docs/gauges-wide.png)
 
-Context, the 5-hour and weekly limits, and the estimates for validation,
-session and project, each as a ring: see [Reading the panel](#reading-the-panel)
-for what every number, colour and mark means.
+Each ring shows one figure: the context window, the 5-hour and weekly limits,
+and the progress estimates for the current validation round, the session and
+the project. The section [Reading the panel](#reading-the-panel) explains what
+every number, colour and mark means.
 
-On a narrow window the labels move under the rings and the gauges wrap:
+The mod itself makes no API calls and adds nothing to the model's context. The
+optional estimates skill does use a few tokens, as explained in
+[What it accesses](#what-it-accesses).
+
+When the window is narrow, the labels move under the rings, and the gauges
+wrap onto a second row if needed:
 
 ![npk-bar gauges on a narrow window](npk-bar/docs/gauges-narrow.png)
 
-It follows the app's light or dark theme:
+It also follows the app's light or dark theme:
 
 ![npk-bar gauges in dark mode](npk-bar/docs/gauges-dark.png)
 
-In a terminal, which cannot draw images, it shows the same figures as text,
-with the colour cues on the bars and numbers instead of rings (rendered from
-the mod's own text layout):
+A terminal cannot draw images, so there the same figures are shown as text,
+with the colour cues on the bars and numbers instead of the rings. This image
+was rendered from the mod's own text layout:
 
 ![npk-bar in an 80-column terminal](npk-bar/docs/terminal-80-columns.png)
 
 
 ## Installation and dependencies:
 
-You need a recent Claude Code (mods are a newer feature: update first if in
-doubt), in the terminal or in the Code tab of the Claude desktop app. Nothing
-else: no API key, no packages to install.
+All you need is a recent version of Claude Code, either in the terminal or in
+the Code tab of the Claude desktop app. Mods are a fairly new feature, so if in
+doubt, update it first. There is nothing else to install: no API key, no
+packages.
 
-Clone this repository once per machine and link the mod (and, optionally, the
-[progress-estimates](skills/progress-estimates/SKILL.md) skill) into your
-personal skills folder, where Claude Code loads them from.
+The idea is to clone this repository once on each machine and then link the
+mod into your personal skills folder, where Claude Code looks for it. If you
+also want the progress estimates, link the
+[progress-estimates](skills/progress-estimates/SKILL.md) skill as well.
 
 On macOS and Linux:
 
@@ -57,7 +61,8 @@ ln -s ~/dev/npk-bar/npk-bar ~/.claude/skills/npk-bar
 ln -s ~/dev/npk-bar/skills/progress-estimates ~/.claude/skills/progress-estimates
 ```
 
-On Windows (PowerShell; a junction needs no administrator rights):
+On Windows, in PowerShell (creating a junction does not require administrator
+rights):
 
 ```
 git clone https://github.com/victordomingos/npk-bar.git "$env:USERPROFILE\dev\npk-bar"
@@ -66,54 +71,61 @@ New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\npk-bar" -Tar
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\progress-estimates" -Target "$env:USERPROFILE\dev\npk-bar\skills\progress-estimates"
 ```
 
-If the mod does not load from a junction on your machine, copy the folders
-instead of linking them, and copy them again after each `git pull`.
+The Windows steps have not been tested yet. If the mod does not load through a
+junction on your machine, you can simply copy the two folders instead, but
+then you will need to copy them again after each `git pull`.
 
-Skip the `progress-estimates` line if you already use another skill that
-writes progress estimates (for example, if the estimate gauges already fill in
-without it): Claude would get two sets of instructions for the same block.
+If you already use some other skill that writes progress estimates, please
+skip the `progress-estimates` line. One easy way to tell is that the estimate
+gauges already fill in without it. Having both would give Claude two sets of
+instructions for the same block.
 
-Check that it is in place:
+To check that everything is in place, run:
 
 ```
 claude plugin validate ~/.claude/skills/npk-bar
 ```
 
-It should end with `Validation passed`. On Windows, use `"$env:USERPROFILE\.claude\skills\npk-bar"`.
+It should end with `Validation passed`. On Windows, use the path
+`"$env:USERPROFILE\.claude\skills\npk-bar"` instead.
 
-To update later, `git pull` in the clone: an open session reloads the mod by
-itself. To uninstall, delete the links in `~/.claude/skills` (Windows:
-`%USERPROFILE%\.claude\skills`); the clone can go too.
+To update it later, just run `git pull` in the clone, and any open session
+will reload the mod by itself. To uninstall it, delete the links in
+`~/.claude/skills` (or `%USERPROFILE%\.claude\skills` on Windows), and the
+clone too, if you no longer need it.
 
-The mod and the skill are plain TypeScript and Markdown, with no scripts,
-binaries or OS-specific code. Tested on macOS.
+Both the mod and the skill are plain TypeScript and Markdown, with no scripts,
+binaries or operating system specific code. So far, they have been tested on
+macOS.
 
 
 ## How to use
 
-Start a **new** Claude Code session: one that was already open does not pick
-up a newly installed mod. To keep a conversation, restart and resume it
-(`/exit`, then `claude --continue`; in the desktop app, quit and reopen it).
+Please note that a Claude Code session that was already open when you
+installed the mod will not pick it up. You will need to start a new session,
+or restart and resume the current one to keep the conversation (`/exit`
+followed by `claude --continue` in the terminal, or quitting and reopening the
+desktop app).
 
-Then turn it on once:
+Then, turn it on once by typing:
 
 ```
 /npk-bar
 ```
 
-The choice is remembered on that machine. Until you pick a layout, it is
-`gauges` in the desktop app and `compact` in a terminal.
+The choice is remembered on that machine. Until you pick a layout yourself,
+it uses `gauges` in the desktop app and `compact` in the terminal.
 
 **Note:  
 The limit figures come from Claude Code itself and only exist on a Pro or Max
-subscription; with an API key the limit gauges are not shown. A new or
-restarted session shows the last saved reading (if its window has not reset
-yet) and updates it after the first reply.**
+subscription. If you use an API key, the limit gauges are not shown. A new or
+restarted session starts with the last saved reading (as long as its window
+has not reset yet) and updates it after the first reply.**
 
 
 ## Basic usage
 
-Turn the bar on or off:
+Turn the panel on or off:
 
 ```
 /npk-bar
@@ -133,42 +145,46 @@ Pick a layout (this also turns it on):
 /npk-bar full
 ```
 
-See what the mod sees right now, to report a problem:
+See what the mod sees right now, which is useful when reporting a problem:
 
 ```
 /npk-bar status
 ```
 
+These are the three layouts:
+
 | Layout | What it shows |
 |---|---|
-| `gauges` | The ring gauges above (desktop app; a terminal shows `compact` instead) |
-| `compact` | One line (two when narrow): a short bar, `% used tokens/window`, and the limit and estimate percentages; each limit's percentage is coloured by the worse of pace and level |
-| `full` | A full-width bar, the top categories, and a short bar per limit and per estimate (limits and estimates side by side when there is room), coloured like the rings |
+| `gauges` | The ring gauges shown above (desktop app only; a terminal shows `compact` instead) |
+| `compact` | One line (two, when narrow) with a short bar, `% used tokens/window` and the limit and estimate percentages; each limit's percentage takes the worse of its pace and level colours |
+| `full` | A full-width bar, the top categories and a short bar for each limit and estimate, side by side when there is room, coloured like the rings |
 
-The `compact` layout in the desktop app:
+This is the `compact` layout in the desktop app:
 
 ![npk-bar compact layout](npk-bar/docs/compact-desktop.png)
 
-The `full` layout, with limits and estimates side by side (dark theme):
+And this is the `full` layout, with the limits and estimates side by side (in
+the dark theme):
 
 ![npk-bar full layout](npk-bar/docs/full-dark.png)
 
 
 ## Reading the panel
 
-Every ring shows its percentage in the middle and its name and details beside
-it (under it, on a narrow window). On the desktop app, hover a ring or a
-segment to see the exact figures and comparisons.
+Every ring shows its percentage in the middle, with its name and details next
+to it (or under it, on a narrow window). In the desktop app, you can hover a
+ring or one of its segments to see the exact figures and comparisons.
 
-**Context.** The arc is the share of the context window in use, split by the
-three biggest `/context` categories in their colours, with everything else
-merged as grey *Other*; the legend beside it names them. Below the name:
-tokens used / window size.
+**Context.** The arc shows how much of the context window is in use, split by
+the three biggest `/context` categories in their own colours, with everything
+else merged into a grey *Other*. The legend next to it names each one, and the
+line under the name shows the tokens used and the size of the window.
 
-**5h limit and Week limit.** The arc is how much of the limit is used; below
-the name, ↻ and the time until it resets. The tick across the ring marks an
-even pace: how much of the window has already gone. The arc's colour compares
-the two:
+**5h limit and Week limit.** The arc shows how much of each limit has been
+used, and the line under the name shows, after the ↻ sign, how long until it
+resets. The small tick across the ring marks an even pace, that is, how much
+of the window's time has already gone by. The colour of the arc compares the
+two:
 
 | Arc | Meaning |
 |---|---|
@@ -177,23 +193,26 @@ the two:
 | orange | 10–25 points over |
 | red | more than 25 points over, or 90% used whatever the pace |
 
-When Claude Code gives no reset time, there is no tick and the arc is green,
-then yellow from 75% and red from 90%.
+When Claude Code does not report a reset time, there is no tick, and the arc
+turns from green to yellow at 75% and to red at 90%.
 
 **Warning tint (gauges layout).** The inside of the Context and limit rings
-turns yellow from 50% used, orange from 75%, red from 90%, and pulses from
-93% (no pulse with *Reduce motion* turned on). The text layouts have one cue
-per limit instead of two: the bar (`full`) or the percentage (`compact`) takes
-the worse of the pace colour and this level colour.
+turns yellow from 50% used, orange from 75% and red from 90%, and it pulses
+from 93% (unless *Reduce motion* is turned on in your system settings). The
+text layouts use a single cue for each limit instead of two: the bar (in
+`full`) or the percentage (in `compact`) takes whichever is worse of the pace
+colour and this level colour.
 
-**Validation, Session, Project.** The arc is the share done, from the
-estimates block. Below the name: time left / implied total, e.g. `~6/30h`
-(6 hours left of about 30 in all) or `~15/38m`; the unit is written once when
-both are the same. The total is derived, not stated: time left ÷ (1 − share
-done). It is left out below 10% done, where it swings too much, and at 100%.
+**Validation, Session, Project.** The arc shows the share of the work already
+done, as stated in the estimates block. The line under the name shows the time
+left against the implied total, as in `~6/30h` (about 6 hours left, out of
+roughly 30 in all) or `~15/38m`. When both figures use the same unit, it is
+written only once. The total is not stated anywhere: it is worked out as time
+left ÷ (1 − share done), and it is left out below 10% done, where it swings
+too much, and at 100%.
 
-The arc's colour is slippage: how much that implied total has grown since the
-first estimate of the line.
+The colour of these arcs shows slippage, that is, how much the implied total
+has grown since the first estimate for that line:
 
 | Arc | Meaning |
 |---|---|
@@ -203,23 +222,25 @@ first estimate of the line.
 | orange | up to 50% over |
 | red | more than 50% over |
 
-The first estimate is the first one in the session's conversation (two
-sessions may estimate different scopes, so they are not compared). When a
-line's share done drops by 30 points or more (new work started), its
-comparison starts over.
+The first estimate is the first one in the current session's conversation.
+Estimates from different sessions are never compared, because two sessions
+may well be estimating different things. When the share done for a line drops
+by 30 points or more, which usually means new work has started, its comparison
+starts over.
 
-The three estimate slots are always in the same place: a dim ring with "–"
-means there is no estimate for that line yet (Validation shows only while you
-have tests pending). A new session in a folder carries over only the Project
-estimate; Validation and Session belong to the session that wrote them (the
-first screenshot above shows such a session).
+The three estimate slots always stay in the same place. A dim ring with "–"
+means there is no estimate for that line yet (Validation only shows up while
+you have tests pending). A new session in the same folder carries over only
+the Project estimate, since Validation and Session belong to the session that
+wrote them. The first screenshot above shows such a session.
 
 
 ## Progress estimates (optional)
 
-The estimate gauges read a short block at the end of Claude's replies, one
-line per item. The labels can be in another language: Portuguese ones are
-shown in English, others as written.
+The estimate gauges read a short block that Claude writes at the end of its
+replies, with one line per item. The labels may also be written in another
+language: Portuguese labels are shown in English, and any others are shown as
+written.
 
 ```
 **Validation:** `████████████░░░░░░░░` 60% · ~1h
@@ -227,33 +248,39 @@ shown in English, others as written.
 **Project:**    `██████████████░░░░░░` 72% · ~45h
 ```
 
-The context and limit gauges need nothing else. For the estimates, install
-the [progress-estimates](skills/progress-estimates/SKILL.md) skill from this
-repository (see Installation): it tells Claude when to write the block and how
-to estimate honestly. Without it, you can simply ask Claude for the block.
+The context and limit gauges don't need anything else. For the estimates, you
+can install the [progress-estimates](skills/progress-estimates/SKILL.md) skill
+from this repository (see the installation section above), which tells Claude
+when to write the block and how to estimate honestly. Without it, you can
+still simply ask Claude for the block.
 
-While the bar is on, the block is hidden from the replies as you see them: the
-bar already shows it. Claude still writes it (that is where the bar reads it
-from), so it stays in the conversation; turn the bar off to see it inline
-again. A reloaded session finds the latest block in the conversation by itself.
+While the panel is on, the block is hidden from the replies as you see them,
+since the panel already shows it. Claude still writes it, because that is
+where the panel reads it from, so it stays in the conversation. If you want to
+see it inline again, just turn the panel off. After a reload, the mod finds
+the latest block in the conversation by itself.
 
 
 ## What it accesses
 
-- **No network, files or processes.** The mod only uses Claude Code's own
-  session data and its display. `claude plugin validate ~/.claude/skills/npk-bar`
-  lists every call it makes.
-- **The conversation, locally.** It reads the session's usage figures, and
-  once per load the conversation itself, to find the latest estimates block.
-  Nothing is sent anywhere.
-- **A small local store** under `~/.claude/plugins/store/`: your on/off and
-  layout choice, the last limit readings, and the last estimates and Project
-  baseline per project folder (keyed by the folder's path). It never leaves
-  your machine.
-- **Its effect on the conversation** is display only: while the bar is on, the
-  estimates block is hidden from the replies as drawn, not removed.
+The mod does not use the network, files or other processes. It only works with
+Claude Code's own session data and display. If you want to see every call it
+makes, `claude plugin validate ~/.claude/skills/npk-bar` lists them all.
 
-Cost in tokens: the mod itself adds nothing to the model's context. The
+It reads the session's usage figures and, once each time it loads, the
+conversation itself, to find the latest estimates block. All of this happens
+locally, and nothing is sent anywhere.
+
+It keeps a small local store under `~/.claude/plugins/store/`, with your
+on/off and layout choices, the last limit readings and the last estimates for
+each project folder (keyed by the folder's path). This file never leaves your
+machine.
+
+Its only effect on the conversation is on how it is displayed: while the panel
+is on, the estimates block is hidden from the replies as drawn, but it is not
+removed.
+
+As for tokens, the mod itself adds nothing to the model's context. The
 optional skill adds its one-line listing to every session (about 110 tokens),
 its instructions when Claude first uses it (about 800 tokens, plus about 330
 during a round of tests), and the block Claude writes (about 100 tokens each
@@ -262,7 +289,7 @@ time, which then stays in the conversation).
 
 ## Getting help
 
-To see what the mod sees right now (limits reported, shown and saved,
+To see what the mod sees right now (the limits reported, shown and saved, the
 estimates, the last refresh and the gauge measurements), use:
 
 ```
@@ -281,12 +308,13 @@ gauges: desktop, 104 columns → 920px allowed, one row needs 790px → labels b
 last refresh: 12s ago
 ```
 
-- **`/npk-bar` is not a known command**: the session started before the
-  mod was installed, or the folder is nested one level too deep. Start a new
-  session.
-- **The command answers but nothing shows**: wait for the next reply, then look
-  in the transcript for a dim line starting with `npk-bar:`, which names
-  the problem.
+If `/npk-bar` is not recognised as a command, either the session was started
+before the mod was installed, or the folder ended up nested one level too
+deep. In both cases, check the installation and start a new session.
+
+If the command answers but nothing shows up, wait for the next reply, and then
+look in the transcript for a dim line starting with `npk-bar:`, which should
+name the problem.
 
 
 ## Did you find a bug or do you have a suggestion?

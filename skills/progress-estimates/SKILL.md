@@ -5,8 +5,8 @@ description: Short progress-estimate block (percentage done and time left) for t
 
 # Progress estimates
 
-At the end of a significant iteration, close the reply with this block. Nothing
-before it announcing it, nothing after it justifying it.
+At the end of a significant iteration, close the reply with this block. Write
+nothing before it to announce it, and nothing after it to justify it.
 
 ## Format
 
@@ -42,7 +42,7 @@ before it announcing it, nothing after it justifying it.
   what the block shows.
 
 Do not repeat the block in intermediate replies (a question, a file read, a
-build run) nor twice in a row with no work in between. A report of test results
+build run), or twice in a row with no work in between. A report of test results
 is not an intermediate reply.
 
 ## How to estimate
@@ -50,7 +50,8 @@ is not an intermediate reply.
 1. **Project:** count by the phases of the project's status or plan document,
    if there is one (phases done / total phases, weighted by size). Without a
    document, estimate from the scope agreed with the user.
-2. **Session:** against what was agreed for this session, not the project.
+2. **Session:** estimate against what was agreed for this session, not the
+   project.
 3. **Validation:** see "Test rounds" below.
 
 Estimate honestly: work still waiting for confirmation by tests is not done,

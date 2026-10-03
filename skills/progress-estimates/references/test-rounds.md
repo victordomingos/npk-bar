@@ -5,7 +5,7 @@ cases at their own pace and reports back, and each report moves the block.
 
 When handing over a test script, put the time estimate in the file itself, not
 only in the reply: one line per step or case, the total if everything passes
-first time, the total with one round of fixes (change, rebuild, re-run the
+the first time, the total with one round of fixes (change, rebuild, re-run the
 affected cases), and what is not counted (waiting on third parties, steps run
 on another machine, environment start-up).
 
