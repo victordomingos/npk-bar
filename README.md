@@ -330,13 +330,18 @@ name the problem.
 
 ## How this was made
 
+The original idea came from Anthropic's newsletter that introduced mods for
+Claude Code, on 3 October 2026, which suggested a context bar drawn above the
+prompt. This project started from that suggestion and grew from there.
+
 The code, the documentation and the companion skill in this repository were
 written by Claude, under the guidance and supervision of Victor Domingos. The
 work was done in Claude Code with Claude Opus 5.5, originally at medium effort,
 and Claude Fable 5.1 served as the advisor, reviewing the approach and the
-results along the way. He decided what the panel should show and how it should look,
-tested each version in the desktop app and in the terminal, and supplied the
-screenshots used here, while Claude wrote and revised the code and the text.
+results along the way. Victor decided what the panel should show and how it
+should look, tested each version in the desktop app and in the terminal, and
+supplied the screenshots used here, while Claude wrote and revised the code and
+the text.
 
 ## Did you find a bug or do you have a suggestion?
 
