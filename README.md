@@ -36,20 +36,31 @@ You need a recent Claude Code (mods are a newer feature: update first if in
 doubt), in the terminal or in the Code tab of the Claude desktop app. Nothing
 else: no API key, no packages to install.
 
-Clone this repository once per machine and link the mod into your personal
-skills folder, where Claude Code loads it from:
+Clone this repository once per machine and link the mod (and, optionally, the
+[progress-estimates](skills/progress-estimates/SKILL.md) skill) into your
+personal skills folder, where Claude Code loads them from.
+
+On macOS and Linux:
 
 ```
 git clone https://github.com/victordomingos/claude-mods.git ~/dev/claude-mods
+mkdir -p ~/.claude/skills
 ln -s ~/dev/claude-mods/context-bar ~/.claude/skills/context-bar
+ln -s ~/dev/claude-mods/skills/progress-estimates ~/.claude/skills/progress-estimates
 ```
 
-On Windows (PowerShell):
+On Windows (PowerShell; a junction needs no administrator rights):
 
 ```
 git clone https://github.com/victordomingos/claude-mods.git "$env:USERPROFILE\dev\claude-mods"
+New-Item -ItemType Directory -Force "$env:USERPROFILE\.claude\skills"
 New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\context-bar" -Target "$env:USERPROFILE\dev\claude-mods\context-bar"
+New-Item -ItemType Junction -Path "$env:USERPROFILE\.claude\skills\progress-estimates" -Target "$env:USERPROFILE\dev\claude-mods\skills\progress-estimates"
 ```
+
+Skip the `progress-estimates` line if you already use another skill that
+writes progress estimates: Claude would get two sets of instructions for the
+same block.
 
 Check that it is in place:
 
@@ -58,10 +69,14 @@ claude plugin validate ~/.claude/skills/context-bar
 ```
 
 It should end with `Validation passed` (warnings about `types` and `author`
-are expected).
+are expected). On Windows, use `"$env:USERPROFILE\.claude\skills\context-bar"`.
 
 To update later, `git pull` in the clone: an open session reloads the mod by
-itself. To uninstall, delete the `~/.claude/skills/context-bar` link.
+itself. To uninstall, delete the links in `~/.claude/skills` (Windows:
+`%USERPROFILE%\.claude\skills`); the clone can go too.
+
+The mod and the skill are plain TypeScript and Markdown with no scripts or
+binaries, so they behave the same on macOS, Linux and Windows.
 
 
 ## How to use
@@ -125,17 +140,10 @@ language, one line per item:
 **Project:**           `██████████████░░░░░░` 72% · ~45h
 ```
 
-The context and limit gauges need nothing else. To get estimates too, ask
-Claude for them, or add this to your `CLAUDE.md` (a project's, or
-`~/.claude/CLAUDE.md` for all of them):
-
-```markdown
-At the end of each significant iteration, end the reply with a progress block,
-one line per item, exactly in this shape (20-block bar, % done, time left):
-**Session:** `████████░░░░░░░░░░░░` 40% · ~3h
-Use the lines "Tests in progress" (only while tests are pending), "Session"
-and "Project".
-```
+The context and limit gauges need nothing else. For the estimates, install
+the [progress-estimates](skills/progress-estimates/SKILL.md) skill from this
+repository (see Installation): it tells Claude when to write the block and how
+to estimate honestly. Without it, you can simply ask Claude for the block.
 
 A reloaded session finds the latest block in the conversation by itself.
 
