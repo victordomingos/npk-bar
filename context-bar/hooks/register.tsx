@@ -310,7 +310,7 @@ export const register: Register = on => {
     const columns = e.surface === 'terminal' ? e.props.bodyColumns : Math.floor(e.props.bodyColumns * 0.8)
     const width = full
       ? Math.max(10, Math.min(100, columns - 6))
-      : Math.max(10, Math.min(40, columns - summary.length - 8))
+      : 20
     const shown = topSegments(snap.segments, 3)
     const split = cells(shown, total, width)
     const bar = shown.map((s, i) =>
@@ -332,23 +332,29 @@ export const register: Register = on => {
     }
 
     if (!full) {
-      // One row for the context (with the limits when they fit beside it, else on their own row),
-      // one for the estimates: `Sessão 40% ~3h · Projeto 72% ~45h`.
-      const limitsText = lims.map(l => limitText(l, true)).join(' · ')
-      const isLimitsInline = lims.length > 0 && width + 1 + summary.length + 3 + limitsText.length <= columns - 4
+      // Compact: percentages only (reset times and time left are in `full` and the gauges), one
+      // line when it fits, else the estimates on a second line. Each limit's percentage is coloured
+      // by pace, the same cue as the gauges' arc.
+      const shortLabel = (l: string) => l.replace(' limit', '')
+      const limitsText = lims.map(l => `${shortLabel(l.label)} ${Math.round(l.percent)}%`).join(' · ')
+      const estText = est ? est.lines.map(l => `${l.label} ${l.percent}%`).join(' · ') : ''
+      const head = width + 1 + summary.length + (limitsText ? 3 + limitsText.length : 0)
+      const isOneLine = !estText || head + 3 + estText.length <= columns - 4
+      const estLine = estText && <Text>{estText}</Text>
       return (
         <Box flexDirection="column">
           <Text wrap="truncate">
             {bar}
             <Text> {summary}</Text>
-            {isLimitsInline && <Text> · {limitsText}</Text>}
+            {lims.map(l => (
+              <Text>
+                {' · '}
+                {shortLabel(l.label)} <Text color={TEXT_STATUS[pace(l, now).status]}>{Math.round(l.percent)}%</Text>
+              </Text>
+            ))}
+            {isOneLine && estText && <Text> · {estLine}</Text>}
           </Text>
-          {lims.length > 0 && !isLimitsInline && <Text wrap="truncate">{limitsText}</Text>}
-          {est && (
-            <Text wrap="truncate">
-              {est.lines.map(l => `${l.label} ${l.percent}%${l.left ? ` ${l.left.split(/\s/)[0]}` : ''}`).join(' · ')}
-            </Text>
-          )}
+          {!isOneLine && <Text wrap="truncate">{estLine}</Text>}
         </Box>
       )
     }

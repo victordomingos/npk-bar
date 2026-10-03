@@ -130,7 +130,7 @@ See what the mod sees right now, to report a problem:
 | Layout | What it shows |
 |---|---|
 | `gauges` | The ring gauges above (desktop app; a terminal shows `compact` instead) |
-| `compact` | A short bar with `% used tokens/window`, then the limits and the estimates |
+| `compact` | One line (two when narrow): a short bar, `% used tokens/window`, and the limit and estimate percentages; each limit's percentage is coloured by pace |
 | `full` | A full-width bar, the top categories, and a 20-block bar per limit and per estimate |
 
 
