@@ -197,6 +197,14 @@ async function refresh($: EngineInterface) {
   await $.state.set(snapshot, snap)
 }
 
+// `/npk-bar about`. Keep VERSION in step with .claude-plugin/plugin.json.
+const VERSION = '0.1.0'
+const ABOUT = [
+  `npk-bar ${VERSION}: context, usage limits and progress estimates above the Claude Code prompt.`,
+  'Generated with Claude (Claude Opus 5.5, in Claude Code) under the guidance and supervision of Victor Domingos.',
+  'https://github.com/victordomingos/npk-bar',
+].join('\n')
+
 // `/npk-bar status`: what the mod sees right now, for reporting problems.
 async function status($: EngineInterface): Promise<string> {
   const usage = await $.session.usage()
@@ -220,7 +228,7 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'npk-bar',
-      description: 'Toggle the npk-bar panel; compact | full | gauges picks the layout; status shows what it sees',
+      description: 'Toggle the npk-bar panel; compact | full | gauges picks the layout; status shows what it sees; about',
     })
     if ((await $.store.get('isOn')) === true) await $.state.set(isOn, true)
     // No saved layout: the default depends on the surface (gauges on desktop, compact in a terminal),
@@ -247,6 +255,7 @@ export const register: Register = on => {
   on('command.run', { command: 'npk-bar' }, async ($, e) => {
     const arg = e.args.trim().toLowerCase() as Layout
     if ((arg as string) === 'status') return { text: await status($) }
+    if ((arg as string) === 'about') return { text: ABOUT }
     const isLayout = LAYOUTS.includes(arg)
     if (isLayout) {
       await $.state.set(layout, arg)
