@@ -10,6 +10,13 @@ It draws above the prompt and refreshes by itself at the end of every turn. The
 mod makes no API calls and adds nothing to the model's context (the optional
 estimates skill adds its listing, and the short block Claude writes per reply).
 
+It sits just above the prompt, in the Code tab of the Claude desktop app or in
+the terminal:
+
+![context-bar above the prompt in the Claude desktop app](context-bar/docs/in-window.png)
+
+The panel on its own, with every gauge filled in:
+
 ![context-bar gauges in the Claude desktop app](context-bar/docs/gauges-wide.png)
 
 Context, the 5-hour and weekly limits, and the estimates for validation,
@@ -202,9 +209,8 @@ points or more (new work started), its comparison starts over.
 The three estimate slots are always in the same place: a dim ring with "–"
 means there is no estimate for that line yet (Validation shows only while you
 have tests pending). A new session in a folder carries over only the Project
-estimate; Validation and Session belong to the session that wrote them.
-
-![a new session: only the Project estimate carried over](context-bar/docs/gauges-no-estimates.png)
+estimate; Validation and Session belong to the session that wrote them (the
+first screenshot above shows such a session).
 
 
 ## Progress estimates (optional)
