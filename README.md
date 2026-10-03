@@ -345,7 +345,7 @@ the text.
 ## Make it your own
 
 Please feel free to fork this project and turn it into something that suits
-the way you work. The panel is a single mod of a few hundred lines, so it is a
+the way you work. The panel is a single mod of about 800 lines in two files, so it is a
 good place to start if you want to learn how Claude Code mods are made, and
 there is plenty of room for variations: different gauges, other figures,
 another layout for the terminal, or a completely different take on the same
