@@ -6,29 +6,22 @@ hand: how full the context window is and what is filling it, how much of your
 session (5-hour) and weekly limits you have used, and how far along the
 current work is.
 
-It draws above the prompt, refreshes by itself at the end of every turn, and
-costs nothing: no API calls, and nothing is added to the model's context.
+It draws above the prompt and refreshes by itself at the end of every turn. The
+mod makes no API calls and adds nothing to the model's context (the optional
+estimates skill adds its listing, and the short block Claude writes per reply).
 
 ![context-bar gauges in the Claude desktop app](context-bar/docs/gauges-wide.png)
 
-- **Context**: one ring split by the biggest `/context` categories, the rest
-  merged as *Other*, with the token total.
-- **5h limit and Week limit**: how much of each limit is used and when it resets. The
-  tick marks where an even pace would put you; the arc is green under that
-  pace, then yellow, orange and red the further over it you go.
-- **Warnings**: the inside of the Context and limit rings turns yellow
-  from 50%, orange from 75%, red from 90%, and pulses from 93%.
-- **Estimates** (optional): progress of the validation in flight (tests you
-  run), the session and the project, with the time left against the implied
-  total. The arc turns green while an estimate holds, then yellow, orange and
-  red as its implied total grows past the first estimate (+10%, +25%, +50%).
+Context, the 5-hour and weekly limits, and the estimates for validation,
+session and project, each as a ring: see [Reading the panel](#reading-the-panel)
+for what every number, colour and mark means.
 
 On a narrow window the labels move under the rings and the gauges wrap:
 
 ![context-bar gauges on a narrow window](context-bar/docs/gauges-narrow.png)
 
-In a terminal, which cannot draw images, it shows the same figures as text
-(rendered from the mod's own text layout):
+In a terminal, which cannot draw images, it shows the same figures as text,
+without the colour cues of the rings (rendered from the mod's own text layout):
 
 ![context-bar in an 80-column terminal](context-bar/docs/terminal-80-columns.png)
 
@@ -101,8 +94,9 @@ The choice is remembered on that machine. Until you pick a layout, it is
 
 **Note:  
 The limit figures come from Claude Code itself and only exist on a Pro or Max
-subscription; with an API key the limit gauges are not shown. They
-appear after the first reply of a session, then stay up to date.**
+subscription; with an API key the limit gauges are not shown. A new or
+restarted session shows the last saved reading (if its window has not reset
+yet) and updates it after the first reply.**
 
 
 ## Basic usage
@@ -127,11 +121,74 @@ Pick a layout (this also turns it on):
 /context-bar full
 ```
 
+See what the mod sees right now, to report a problem:
+
+```
+/context-bar status
+```
+
 | Layout | What it shows |
 |---|---|
 | `gauges` | The ring gauges above (desktop app; a terminal shows `compact` instead) |
 | `compact` | A short bar with `% used tokens/window`, then the limits and the estimates |
 | `full` | A full-width bar, the top categories, and a 20-block bar per limit and per estimate |
+
+
+## Reading the panel
+
+Every ring shows its percentage in the middle and its name and details beside
+it (under it, on a narrow window). On the desktop app, hover a ring or a
+segment to see the exact figures and comparisons.
+
+**Context.** The arc is the share of the context window in use, split by the
+three biggest `/context` categories in their colours, with everything else
+merged as grey *Other*; the legend beside it names them. Below the name:
+tokens used / window size.
+
+**5h limit and Week limit.** The arc is how much of the limit is used; below
+the name, ↻ and the time until it resets. The tick across the ring marks an
+even pace: how much of the window has already gone. The arc's colour compares
+the two:
+
+| Arc | Meaning |
+|---|---|
+| green | at or under pace (the arc stops at or before the tick) |
+| yellow | up to 10 points over pace |
+| orange | 10–25 points over |
+| red | more than 25 points over, or 90% used whatever the pace |
+
+When Claude Code gives no reset time, there is no tick and the arc is green,
+then yellow from 75% and red from 90%.
+
+**Warning tint (gauges layout).** The inside of the Context and limit rings
+turns yellow from 50% used, orange from 75%, red from 90%, and pulses from
+93% (no pulse with *Reduce motion* turned on). The text layouts have no tint.
+
+**Validation, Session, Project.** The arc is the share done, from the
+estimates block. Below the name: time left / implied total, e.g. `~6/30h`
+(6 hours left of about 30 in all) or `~15/38m`; the unit is written once when
+both are the same. The total is derived, not stated: time left ÷ (1 − share
+done). It is left out below 10% done, where it swings too much, and at 100%.
+
+The arc's colour is slippage: how much that implied total has grown since the
+first estimate of the line.
+
+| Arc | Meaning |
+|---|---|
+| violet | no earlier estimate to compare with yet |
+| green | on the first estimate, under it, or up to 10% over |
+| yellow | up to 25% over |
+| orange | up to 50% over |
+| red | more than 50% over |
+
+The first estimate is the first one in the conversation; Project's is kept
+across sessions in the same folder. When a line's share done drops by 30
+points or more (new work started), its comparison starts over.
+
+The three estimate slots are always in the same place: a dim ring with "–"
+means there is no estimate for that line yet (Validation shows only while you
+have tests pending). A new session in a folder carries over only the Project
+estimate; Validation and Session belong to the session that wrote them.
 
 
 ## Progress estimates (optional)
