@@ -138,7 +138,8 @@ async function savedLimits($: EngineInterface): Promise<Limit[]> {
 
 // New estimates: set them as current and record each line's first implied total as its baseline
 // (slippage is measured from it). A line whose share done drops by 30 points or more is new work:
-// its baseline starts over. Project's baseline is kept across sessions in this folder.
+// its baseline starts over. Baselines belong to the session: two sessions in one folder may
+// estimate different scopes, and comparing across them gave false alarms.
 async function recordEstimates($: EngineInterface, lines: Estimate[]): Promise<void> {
   const previous = (await $.state.get(estimates)).value
   const base: Baselines = { ...((await $.state.get(baselines)).value ?? {}) }
@@ -154,7 +155,6 @@ async function recordEstimates($: EngineInterface, lines: Estimate[]): Promise<v
   await $.state.set(baselines, base)
   const cwd = await $.session.cwd()
   await $.store.set(`estimates:${cwd}`, est)
-  if (base.Project !== undefined) await $.store.set(`baseline:${cwd}`, base.Project)
 }
 
 // The estimates blocks in this conversation, the newest set as current; false when there are none.
@@ -231,10 +231,6 @@ export const register: Register = on => {
     // Estimates: a resumed session has its own block in the conversation (all three lines are
     // current). A new session in the same folder carries over only the Project line: Validation and
     // Session belong to the session that wrote them.
-    const projectBaseline = (await $.store.get(`baseline:${e.cwd}`)) as number | undefined
-    if (projectBaseline !== undefined && !(await $.state.get(baselines)).value?.Project) {
-      await $.state.set(baselines, { ...((await $.state.get(baselines)).value ?? {}), Project: projectBaseline })
-    }
     if (!(await findEstimatesInTranscript($))) {
       const saved = (await $.store.get(`estimates:${e.cwd}`)) as Estimates | undefined
       const project = saved?.lines.filter(l => englishLabel(l.label) === 'Project') ?? []

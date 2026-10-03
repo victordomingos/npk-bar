@@ -32,7 +32,8 @@ It follows the app's light or dark theme:
 ![context-bar gauges in dark mode](context-bar/docs/gauges-dark.png)
 
 In a terminal, which cannot draw images, it shows the same figures as text,
-without the colour cues of the rings (rendered from the mod's own text layout):
+with the colour cues on the bars and numbers instead of rings (rendered from
+the mod's own text layout):
 
 ![context-bar in an 80-column terminal](context-bar/docs/terminal-80-columns.png)
 
@@ -69,8 +70,8 @@ If the mod does not load from a junction on your machine, copy the folders
 instead of linking them, and copy them again after each `git pull`.
 
 Skip the `progress-estimates` line if you already use another skill that
-writes progress estimates: Claude would get two sets of instructions for the
-same block.
+writes progress estimates (for example, if the estimate gauges already fill in
+without it): Claude would get two sets of instructions for the same block.
 
 Check that it is in place:
 
@@ -141,7 +142,7 @@ See what the mod sees right now, to report a problem:
 | Layout | What it shows |
 |---|---|
 | `gauges` | The ring gauges above (desktop app; a terminal shows `compact` instead) |
-| `compact` | One line (two when narrow): a short bar, `% used tokens/window`, and the limit and estimate percentages; each limit's percentage is coloured by pace |
+| `compact` | One line (two when narrow): a short bar, `% used tokens/window`, and the limit and estimate percentages; each limit's percentage is coloured by the worse of pace and level |
 | `full` | A full-width bar, the top categories, and a short bar per limit and per estimate (limits and estimates side by side when there is room), coloured like the rings |
 
 The `compact` layout in the desktop app:
@@ -202,9 +203,10 @@ first estimate of the line.
 | orange | up to 50% over |
 | red | more than 50% over |
 
-The first estimate is the first one in the conversation; Project's is kept
-across sessions in the same folder. When a line's share done drops by 30
-points or more (new work started), its comparison starts over.
+The first estimate is the first one in the session's conversation (two
+sessions may estimate different scopes, so they are not compared). When a
+line's share done drops by 30 points or more (new work started), its
+comparison starts over.
 
 The three estimate slots are always in the same place: a dim ring with "–"
 means there is no estimate for that line yet (Validation shows only while you
@@ -265,6 +267,18 @@ estimates, the last refresh and the gauge measurements), use:
 
 ```
 /context-bar status
+```
+
+A healthy output looks like this:
+
+```
+on: true · layout: gauges
+context: 39% of 1000000 tokens
+rate limits reported now: five_hour 29%, seven_day 79%
+limits shown: 5h limit 29%, Week limit 79% · saved: 5h limit 29%, Week limit 79%
+estimates: 3 lines · transcript scanned: true
+gauges: desktop, 104 columns → 920px allowed, one row needs 790px → labels beside
+last refresh: 12s ago
 ```
 
 - **`/context-bar` is not a known command**: the session started before the
