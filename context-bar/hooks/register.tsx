@@ -25,6 +25,14 @@ const fmt = (n: number) =>
   n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1)}k` : `${n}`
 
 // Rate-limit windows as the engine names them; anything else (a gateway's spend limit) keeps its own name.
+// How full a window is, as a colour for text (the gauges tint the ring's centre instead):
+// yellow from 50%, orange from 75%, red from 90%.
+const LEVEL_ORDER = ['good', 'warning', 'serious', 'critical'] as const
+type Level = (typeof LEVEL_ORDER)[number]
+const levelOf = (percent: number): Level =>
+  percent >= 90 ? 'critical' : percent >= 75 ? 'serious' : percent >= 50 ? 'warning' : 'good'
+const worse = (a: Level, b: Level): Level => (LEVEL_ORDER.indexOf(a) >= LEVEL_ORDER.indexOf(b) ? a : b)
+
 // Text layouts: the same pace status as the gauges, in terminal colours.
 const TEXT_STATUS = { good: 'green', warning: 'yellow', serious: '#ec835a', critical: 'red' } as const
 
@@ -344,11 +352,15 @@ export const register: Register = on => {
         <Box flexDirection="column">
           <Text wrap="truncate">
             {bar}
-            <Text> {summary}</Text>
+            <Text>
+              {' '}
+              <Text color={levelOf(pct) === 'good' ? undefined : TEXT_STATUS[levelOf(pct)]}>{pct}%</Text> {ratio}
+            </Text>
             {lims.map(l => (
               <Text>
                 {' · '}
-                {shortLabel(l.label)} <Text color={TEXT_STATUS[pace(l, now).status]}>{Math.round(l.percent)}%</Text>
+                {shortLabel(l.label)}{' '}
+                <Text color={TEXT_STATUS[worse(pace(l, now).status, levelOf(l.percent))]}>{Math.round(l.percent)}%</Text>
               </Text>
             ))}
             {isOneLine && estText && <Text> · {estLine}</Text>}
@@ -384,7 +396,10 @@ export const register: Register = on => {
           <Text>{'░'.repeat(ROW_BAR - blocks(l.percent, ROW_BAR))}</Text>
           <Text>
             {' '}
-            {Math.round(l.percent)}%{resets(l) ? ` · ↻ ${resets(l)}` : ''}
+            <Text color={levelOf(l.percent) === 'good' ? undefined : TEXT_STATUS[levelOf(l.percent)]}>
+              {Math.round(l.percent)}%
+            </Text>
+            {resets(l) ? ` · ↻ ${resets(l)}` : ''}
           </Text>
         </Text>
       </Box>
@@ -416,7 +431,7 @@ export const register: Register = on => {
         </Box>
         <Text wrap="wrap">
           <Text bold>
-            {pct}% used · {ratio}
+            <Text color={levelOf(pct) === 'good' ? undefined : TEXT_STATUS[levelOf(pct)]}>{pct}%</Text> used · {ratio}
           </Text>
           {used.map(s => (
             <Text>
@@ -431,7 +446,7 @@ export const register: Register = on => {
         </Text>
         {isTwoColumns ? (
           <Box flexDirection="row" columnGap={3}>
-            <Box flexDirection="column" width={limitColumn} flexShrink={0}>
+            <Box flexDirection="column" flexShrink={0}>
               {limitRows}
             </Box>
             <Box flexDirection="column">{estRows}</Box>

@@ -170,7 +170,10 @@ then yellow from 75% and red from 90%.
 
 **Warning tint (gauges layout).** The inside of the Context and limit rings
 turns yellow from 50% used, orange from 75%, red from 90%, and pulses from
-93% (no pulse with *Reduce motion* turned on). The text layouts have no tint.
+93% (no pulse with *Reduce motion* turned on). In the text layouts the same
+levels colour the percentage instead: in `full` the bar shows pace and the
+number shows the level; in `compact`, with only the number, it takes the worse
+of the two.
 
 **Validation, Session, Project.** The arc is the share done, from the
 estimates block. Below the name: time left / implied total, e.g. `~6/30h`
