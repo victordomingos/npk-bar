@@ -392,14 +392,11 @@ export const register: Register = on => {
           <Text>{l.label}:</Text>
         </Box>
         <Text>
-          <Text color={TEXT_STATUS[pace(l, now).status]}>{'█'.repeat(blocks(l.percent, ROW_BAR))}</Text>
+          <Text color={TEXT_STATUS[worse(pace(l, now).status, levelOf(l.percent))]}>{'█'.repeat(blocks(l.percent, ROW_BAR))}</Text>
           <Text>{'░'.repeat(ROW_BAR - blocks(l.percent, ROW_BAR))}</Text>
           <Text>
             {' '}
-            <Text color={levelOf(l.percent) === 'good' ? undefined : TEXT_STATUS[levelOf(l.percent)]}>
-              {Math.round(l.percent)}%
-            </Text>
-            {resets(l) ? ` · ↻ ${resets(l)}` : ''}
+            {Math.round(l.percent)}%{resets(l) ? ` · ↻ ${resets(l)}` : ''}
           </Text>
         </Text>
       </Box>
