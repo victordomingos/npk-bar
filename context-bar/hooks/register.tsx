@@ -364,8 +364,8 @@ export const register: Register = on => {
     // proportional font.
     // Row labels in a fixed-width box (padding with spaces does not align on the desktop's
     // proportional font), one width per column.
-    const limitLabelWidth = Math.max(0, ...lims.map(l => l.label.length)) + 3
-    const estLabelWidth = Math.max(0, ...(est?.lines.map(l => l.label.length) ?? [])) + 3
+    const limitLabelWidth = Math.max(0, ...lims.map(l => l.label.length)) + 1
+    const estLabelWidth = Math.max(0, ...(est?.lines.map(l => l.label.length) ?? [])) + 1
     const base = (await $.state.get(baselines)).value ?? {}
 
     const limitRows = lims.map(l => (
