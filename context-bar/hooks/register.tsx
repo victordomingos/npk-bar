@@ -120,6 +120,25 @@ async function savedLimits($: EngineInterface): Promise<Limit[]> {
     .map(l => ({ ...l, label: renamed[l.label] ?? l.label }))
 }
 
+// The newest estimates block in this conversation, set as current; false when there is none.
+// Runs once per load.
+async function findEstimatesInTranscript($: EngineInterface): Promise<boolean> {
+  if (scannedTranscript) return false
+  scannedTranscript = true
+  const messages = await $.session.messages()
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role !== 'assistant') continue
+    const lines = parseEstimates(messages[i].text ?? '')
+    if (lines.length > 0) {
+      const est: Estimates = { lines, at: await $.clock.now() }
+      await $.state.set(estimates, est)
+      await $.store.set(`estimates:${await $.session.cwd()}`, est)
+      return true
+    }
+  }
+  return false
+}
+
 async function refresh($: EngineInterface) {
   lastRefresh = await $.clock.now()
   const usage = await $.session.usage({ breakdown: 'summary' })
@@ -134,20 +153,8 @@ async function refresh($: EngineInterface) {
   }
   // No estimates yet (a reloaded session, or one this copy of the mod never saw): find the newest
   // block in the conversation itself.
-  if (!scannedTranscript && !(await $.state.get(estimates)).value) {
-    scannedTranscript = true
-    const messages = await $.session.messages()
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].role !== 'assistant') continue
-      const lines = parseEstimates(messages[i].text ?? '')
-      if (lines.length > 0) {
-        const est: Estimates = { lines, at: await $.clock.now() }
-        await $.state.set(estimates, est)
-        await $.store.set(`estimates:${await $.session.cwd()}`, est)
-        break
-      }
-    }
-  }
+  if (!scannedTranscript && !(await $.state.get(estimates)).value) await findEstimatesInTranscript($)
+
   const b = usage.context.breakdown
   if (!b) return
   const segments: Segment[] = b.categories
@@ -188,10 +195,15 @@ export const register: Register = on => {
     const savedLayout = (await $.store.get('layout')) ?? ((await $.store.get('isFull')) === true ? 'full' : undefined)
     if (LAYOUTS.includes(savedLayout as Layout)) await $.state.set(layout, savedLayout as Layout)
     if (((await $.state.get(limits)).value ?? []).length === 0) await $.state.set(limits, await savedLimits($))
-    // A resumed long session: show the last estimates seen in this folder, if recent.
-    const saved = (await $.store.get(`estimates:${e.cwd}`)) as Estimates | undefined
-    if (saved && (await $.clock.now()) - saved.at < MAX_ESTIMATE_AGE_MS) {
-      await $.state.set(estimates, saved)
+    // Estimates: a resumed session has its own block in the conversation (all three lines are
+    // current). A new session in the same folder carries over only the Project line: Tests and
+    // Session belong to the session that wrote them.
+    if (!(await findEstimatesInTranscript($))) {
+      const saved = (await $.store.get(`estimates:${e.cwd}`)) as Estimates | undefined
+      const project = saved?.lines.filter(l => englishLabel(l.label) === 'Project') ?? []
+      if (saved && project.length > 0 && (await $.clock.now()) - saved.at < MAX_ESTIMATE_AGE_MS) {
+        await $.state.set(estimates, { lines: project, at: saved.at })
+      }
     }
     if ((await $.state.get(isOn)).value ?? false) void refresh($).catch(() => {})
 

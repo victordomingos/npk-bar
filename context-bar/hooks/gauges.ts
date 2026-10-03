@@ -213,11 +213,25 @@ export function gaugesSvg(input: {
     const g = gauge(0, [{ from: 0, len: Math.min(100, l.percent), cls, title: `${l.label} ${pct(l.percent)}` }], pct(l.percent), l.label, sub, `${l.label} limit ${pct(l.percent)} used${sub ? `, resets in ${sub.slice(2)}` : ''}${paceText}`, tick, stacked, level(l.percent))
     units.push({ group: 1, width: g.width, svg: g.svg })
   }
-  for (const e of estimates) {
+  // Fixed slots, so nothing shifts when a line comes or goes: Tests appears only while tests are
+  // pending, and a new session carries over only Project. A missing slot is a quiet empty ring;
+  // labels other than these three follow in their own order.
+  const SLOTS_ORDER = ['Tests', 'Session', 'Project']
+  const ordered: (Estimate | string)[] =
+    estimates.length > 0
+      ? [...SLOTS_ORDER.map(l => estimates.find(e => e.label === l) ?? l), ...estimates.filter(e => !SLOTS_ORDER.includes(e.label))]
+      : []
+  for (const e of ordered) {
+    if (typeof e === 'string') {
+      const g = gauge(0, [], '–', e, e === 'Tests' ? 'none pending' : 'not yet', `${e}: no estimate yet`, undefined, stacked)
+      units.push({ group: 2, width: g.width, svg: `<g class="idle">${g.svg}</g>` })
+      continue
+    }
     const left = e.left.split(/\s/)[0]
     // Total implied by the share done: left / (1 − done). Shown as `left/total`.
     const h = hoursOf(left)
-    const total = h !== null && e.percent < 100 ? h / (1 - e.percent / 100) : null
+    // Below 10% done the implied total swings too much (2% vs 3% moves it by a third): omit it.
+    const total = h !== null && e.percent >= 10 && e.percent < 100 ? h / (1 - e.percent / 100) : null
     // Same unit on both sides: written once, `~45/161h`, `~15/30m`; mixed: `~30m/1.5h`.
     const short = (v: number) => hrs(v).replace('min', 'm')
     const sub =
@@ -269,7 +283,7 @@ export function gaugesSvg(input: {
     `circle{fill:none;stroke-width:${STROKE}}circle[class$="f"]{stroke:none}` +
     `text{font:500 9px system-ui,-apple-system,sans-serif;text-anchor:start;fill:#3d3d3a}.v{font-weight:600;font-size:8.5px;text-anchor:middle}.c{text-anchor:middle}` +
     `.s{font-weight:400;font-size:8.5px;fill:#73726c}.g{font-weight:400;font-size:9px;text-anchor:start}` +
-    `.disc{stroke:none}.lv-warning{fill:${STATUS.warning};fill-opacity:.3}.lv-serious{fill:${STATUS.serious};fill-opacity:.32}` +
+    `.idle{opacity:.45}.disc{stroke:none}.lv-warning{fill:${STATUS.warning};fill-opacity:.3}.lv-serious{fill:${STATUS.serious};fill-opacity:.32}` +
     `.lv-critical,.lv-blink{fill:${STATUS.critical};fill-opacity:.3}.lv-blink{animation:blink 1.2s ease-in-out infinite}` +
     `@keyframes blink{50%{fill-opacity:.65}}@media (prefers-reduced-motion: reduce){.lv-blink{animation:none}}` +
     `.div{stroke:#d1cfc5;stroke-width:1}.pace{stroke:#3d3d3a;stroke-width:1.6;stroke-linecap:round}.track{stroke:#e5e3da}.bufr{stroke:#bdbbb2}${Object.entries(STATUS).map(([k, c]) => `.st-${k}{stroke:${c}}`).join('')}${light}` +
